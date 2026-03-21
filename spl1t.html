@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>spl1t!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07070f;
+      --surface: rgba(255,255,255,0.04);
+      --surface-hover: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.16);
+      --accent: #aaff00;
+      --accent-dim: rgba(170,255,0,0.10);
+      --accent-glow: rgba(170,255,0,0.25);
+      --text: #eeeeee;
+      --text-muted: #777;
+      --text-dim: #333;
+      --red: #ff4d6d;
+      --red-dim: rgba(255,77,109,0.10);
+      --yellow: #ffc800;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+    .ambient { position: fixed; pointer-events: none; z-index: 0; border-radius: 50%; filter: blur(80px); }
+    .ambient-1 { top:-15%;left:-10%;width:55vw;height:55vw;background:radial-gradient(circle,rgba(170,255,0,.055) 0%,transparent 70%); }
+    .ambient-2 { bottom:-20%;right:-10%;width:50vw;height:50vw;background:radial-gradient(circle,rgba(90,60,255,.06) 0%,transparent 70%); }
+
+    header {
+      position:sticky;top:0;z-index:100;padding:14px 20px;
+      display:flex;align-items:center;justify-content:space-between;
+      background:rgba(7,7,15,.60);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+      border-bottom:1px solid var(--border);
+    }
+    .logo { font-size:1.55rem;font-weight:800;letter-spacing:-.04em;color:var(--text);line-height:1; }
+    .logo .one { color:var(--accent); }
+    .step-dots { display:flex;align-items:center;gap:5px; }
+    .dot { height:7px;border-radius:99px;background:var(--text-dim);transition:all .35s cubic-bezier(.4,0,.2,1);width:7px; }
+    .dot.done { background:rgba(170,255,0,.35); }
+    .dot.active { background:var(--accent);width:22px;box-shadow:0 0 8px var(--accent-glow); }
+
+    main { position:relative;z-index:1;max-width:560px;margin:0 auto;padding:28px 16px 100px; }
+
+    .step-panel { display:none; }
+    .step-panel.active { display:block;animation:fadeUp .32s cubic-bezier(.4,0,.2,1) forwards; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+    .step-title { font-size:1.85rem;font-weight:800;margin-bottom:6px;line-height:1.1;letter-spacing:-.02em; }
+    .step-sub { color:var(--text-muted);font-size:.82rem;margin-bottom:26px;font-family:'JetBrains Mono',monospace; }
+
+    .card { background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:12px; }
+
+    .input-group { display:flex;flex-direction:column;gap:5px;margin-bottom:12px; }
+    .input-group:last-child { margin-bottom:0; }
+    label { font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted); }
+
+    input[type="text"], input[type="number"] {
+      background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;
+      padding:11px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
+      outline:none;transition:border-color .2s,box-shadow .2s,background .2s;width:100%;
+      -moz-appearance:textfield;
+    }
+    input[type="text"]:focus, input[type="number"]:focus {
+      border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);background:rgba(170,255,0,.03);
+    }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance:none; }
+
+    .input-row { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px; }
+    .input-row .input-group { margin-bottom:0; }
+
+    .btn {
+      display:inline-flex;align-items:center;justify-content:center;gap:7px;
+      padding:11px 18px;border-radius:10px;font-family:'Syne',sans-serif;
+      font-size:.88rem;font-weight:700;cursor:pointer;border:none;
+      transition:all .2s ease;white-space:nowrap;
+    }
+    .btn-accent { background:var(--accent);color:#050508; }
+    .btn-accent:hover { background:#c4ff2a;transform:translateY(-1px);box-shadow:0 6px 24px var(--accent-glow); }
+    .btn-accent:active { transform:translateY(0); }
+    .btn-ghost { background:var(--surface);color:var(--text);border:1px solid var(--border); }
+    .btn-ghost:hover { background:var(--surface-hover);border-color:var(--border-strong); }
+    .btn-full { width:100%; }
+
+    .chips-list { display:flex;flex-direction:column;gap:7px;margin-bottom:12px; }
+    .chip-item {
+      display:flex;align-items:center;justify-content:space-between;
+      background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+      animation:fadeUp .22s ease;
+    }
+    .chip-name { font-weight:700;font-size:.92rem; }
+    .chip-detail { font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--text-muted);margin-top:2px; }
+    .chip-price { font-family:'JetBrains Mono',monospace;font-size:.9rem;font-weight:600;color:var(--accent);margin-right:8px; }
+    .chip-right { display:flex;align-items:center;gap:6px; }
+    .remove-btn { background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.15rem;line-height:1;transition:color .2s;padding:2px 5px;border-radius:5px; }
+    .remove-btn:hover { color:var(--red);background:var(--red-dim); }
+
+    .person-chips { display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px; }
+    .person-chip {
+      display:flex;align-items:center;gap:5px;background:var(--surface);
+      border:1px solid var(--border);border-radius:99px;padding:6px 10px 6px 13px;
+      font-size:.86rem;font-weight:600;animation:fadeUp .22s ease;
+    }
+    .person-chip button { background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:.9rem;line-height:1;transition:color .2s;padding:1px 3px; }
+    .person-chip button:hover { color:var(--red); }
+
+    .assign-card { background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden; }
+    .assign-header { padding:13px 17px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02); }
+    .assign-item-name { font-weight:700;font-size:.96rem; }
+    .assign-item-meta { font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-muted);margin-top:2px; }
+    .assign-item-price { font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.88rem;font-weight:600; }
+    .assign-body { padding:12px 17px; }
+    .assign-quick-btns { display:flex;gap:6px;margin-bottom:10px; }
+    .assign-quick {
+      font-family:'JetBrains Mono',monospace;font-size:.72rem;padding:4px 10px;border-radius:7px;
+      background:var(--accent-dim);border:1px solid rgba(170,255,0,.18);color:var(--accent);cursor:pointer;transition:all .18s;
+    }
+    .assign-quick:hover { background:rgba(170,255,0,.18); }
+    .assign-row { display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border); }
+    .assign-row:last-of-type { border-bottom:none; }
+    .assign-person-name { font-size:.88rem;font-weight:600; }
+    .assign-right { display:flex;align-items:center;gap:8px; }
+    .assign-input {
+      width:68px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;
+      padding:6px 9px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.88rem;
+      outline:none;text-align:center;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;
+    }
+    .assign-input::-webkit-outer-spin-button,.assign-input::-webkit-inner-spin-button{-webkit-appearance:none;}
+    .assign-input:focus { border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim); }
+    .assign-share { font-family:'JetBrains Mono',monospace;font-size:.75rem;min-width:60px;text-align:right;color:var(--text-dim); }
+    .assign-share.has-val { color:var(--accent); }
+    .assign-warning { font-size:.73rem;color:var(--red);margin-top:7px;font-family:'JetBrains Mono',monospace; }
+
+    .seg-toggle { display:flex;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px;margin-bottom:14px; }
+    .seg-btn { flex:1;padding:9px;border-radius:8px;border:none;background:transparent;color:var(--text-muted);font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s; }
+    .seg-btn.active { background:var(--accent);color:#050508; }
+
+    .info-row { font-family:'JetBrains Mono',monospace;font-size:.77rem;color:var(--text-muted);margin-top:5px; }
+    .info-row .val { color:var(--accent); }
+
+    .ticket {
+      border:1px solid var(--border);border-radius:20px;overflow:hidden;
+      backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+      background:rgba(255,255,255,.025);
+    }
+    .ticket-head { background:var(--accent);padding:22px 22px 18px;color:#04040a; }
+    .ticket-label { font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.5; }
+    .ticket-grand { font-size:2.6rem;font-weight:800;line-height:1;margin-top:4px;letter-spacing:-.03em; }
+    .ticket-desc { font-family:'JetBrains Mono',monospace;font-size:.75rem;opacity:.45;margin-top:5px; }
+    .ticket-divider { border:none;border-top:1px dashed rgba(255,255,255,.1);margin:0 22px; }
+    .ticket-body { padding:16px 22px 8px; }
+    .ticket-person { display:flex;justify-content:space-between;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--border); }
+    .ticket-person:last-child { border-bottom:none; }
+    .ticket-person-name { font-weight:700;font-size:.98rem; }
+    .ticket-person-detail { font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted);margin-top:4px;max-width:230px;line-height:1.5; }
+    .ticket-amount { text-align:right;flex-shrink:0;margin-left:12px; }
+    .ticket-amount .main { font-family:'JetBrains Mono',monospace;font-size:1.18rem;font-weight:600;color:var(--accent); }
+    .ticket-amount .tip-note { font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--text-muted);margin-top:2px; }
+    .ticket-footer { padding:14px 22px 20px; }
+    .verify-bar { padding:11px 14px;border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:.78rem;display:flex;align-items:flex-start;gap:8px;line-height:1.5; }
+    .verify-bar.ok  { background:rgba(170,255,0,.08);border:1px solid rgba(170,255,0,.2);color:var(--accent); }
+    .verify-bar.warn { background:rgba(255,200,0,.08);border:1px solid rgba(255,200,0,.22);color:var(--yellow); }
+
+    /* Done screen */
+    .done-divider { border:none;border-top:1px dashed var(--border);margin:32px 0; }
+    .done-screen { text-align:center;padding:8px 0 32px;animation:fadeUp .5s cubic-bezier(.4,0,.2,1) forwards; }
+    .done-check {
+      width:72px;height:72px;border-radius:50%;background:var(--accent);
+      display:flex;align-items:center;justify-content:center;margin:0 auto 18px;
+      font-size:2rem;color:#04040a;
+      animation:popIn .5s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+    .done-title { font-size:1.65rem;font-weight:800;letter-spacing:-.02em;margin-bottom:8px; }
+    .done-sub { font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text-muted);margin-bottom:26px;line-height:1.7; }
+
+    .bottom-bar {
+      position:fixed;bottom:0;left:0;right:0;padding:10px 16px;
+      background:rgba(7,7,15,.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+      border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end;z-index:100;align-items:center;
+    }
+    .step-counter { font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-muted);margin-right:auto; }
+
+    .reset-link {
+      background:none;border:none;color:var(--text-muted);font-size:.76rem;
+      font-family:'JetBrains Mono',monospace;cursor:pointer;text-decoration:underline;
+      text-underline-offset:3px;transition:color .2s;
+    }
+    .reset-link:hover { color:var(--red); }
+
+    .mt-10{margin-top:10px} .mt-16{margin-top:16px} .mt-24{margin-top:24px} .center{text-align:center}
+  </style>
+</head>
+<body>
+
+<div class="ambient ambient-1"></div>
+<div class="ambient ambient-2"></div>
+
+<header>
+  <div class="logo">spl<span class="one">1</span>t!</div>
+  <div class="step-dots" id="stepDots"></div>
+</header>
+
+<main>
+
+  <!-- STEP 0 -->
+  <div class="step-panel active" id="step-0">
+    <div class="step-title">Hola 👋</div>
+    <p class="step-sub">Empecemos con el total de la cuenta</p>
+    <div class="card">
+      <div class="input-group">
+        <label>Total de la cuenta</label>
+        <input type="number" id="totalInput" placeholder="0" min="0" step="any">
+      </div>
+      <div class="input-group">
+        <label>Descripción (opcional)</label>
+        <input type="text" id="descInput" placeholder="Cena, salida, compras...">
+      </div>
+    </div>
+    <p class="info-row">Este valor se usa al final para verificar que los números coincidan.</p>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step-panel" id="step-1">
+    <div class="step-title">¿Qué pidieron?</div>
+    <p class="step-sub">Agregá los ítems de la cuenta</p>
+    <div id="itemsList" class="chips-list"></div>
+    <div class="card">
+      <div class="input-group">
+        <label>Nombre</label>
+        <input type="text" id="itemName" placeholder="Nombre del ítem">
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Precio unitario</label>
+          <input type="number" id="itemPrice" placeholder="0" min="0" step="any">
+        </div>
+        <div class="input-group">
+          <label>Cantidad</label>
+          <input type="number" id="itemQty" placeholder="Cant." min="1" step="1">
+        </div>
+      </div>
+      <div class="info-row" id="itemPreview" style="margin-bottom:10px;min-height:18px"></div>
+      <button class="btn btn-ghost btn-full" onclick="addItem()">+ Agregar ítem</button>
+    </div>
+    <div class="info-row mt-10">Subtotal ítems: <span class="val" id="itemsTotalDisplay">$0</span></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-panel" id="step-2">
+    <div class="step-title">¿Quiénes fueron?</div>
+    <p class="step-sub">Agregá a todas las personas</p>
+    <div id="peopleList" class="person-chips"></div>
+    <div class="card">
+      <div class="input-group">
+        <label>Nombre</label>
+        <input type="text" id="personName" placeholder="Nombre"
+          onkeydown="if(event.key==='Enter')addPerson()">
+      </div>
+      <button class="btn btn-ghost btn-full" onclick="addPerson()">+ Agregar persona</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-panel" id="step-3">
+    <div class="step-title">Asigná el consumo</div>
+    <p class="step-sub">Indicá cuánto consumió cada uno. Usá 0.5 para mitades.</p>
+    <div id="assignmentContainer"></div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step-panel" id="step-4">
+    <div class="step-title">¿Dejamos propina?</div>
+    <p class="step-sub">Opcional — podés continuar sin propina.</p>
+    <div class="card">
+      <label style="margin-bottom:8px;display:block">Tipo de propina</label>
+      <div class="seg-toggle">
+        <button class="seg-btn active" id="tipPctBtn" onclick="setTipMode('pct')">Porcentaje %</button>
+        <button class="seg-btn" id="tipAmtBtn" onclick="setTipMode('amt')">Monto fijo $</button>
+      </div>
+      <div class="input-group">
+        <label id="tipLabel">Porcentaje</label>
+        <input type="number" id="tipInput" placeholder="0" min="0" step="any" oninput="renderTipCalc()">
+      </div>
+      <label style="margin-top:14px;margin-bottom:8px;display:block">Distribución de la propina</label>
+      <div class="seg-toggle" style="margin-bottom:0">
+        <button class="seg-btn active" id="tipEqBtn" onclick="setTipSplit('equal')">Partes iguales</button>
+        <button class="seg-btn" id="tipPropBtn" onclick="setTipSplit('prop')">Proporcional</button>
+      </div>
+      <div class="info-row mt-10" id="tipDisplay"></div>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step-panel" id="step-5">
+    <div class="step-title">Resumen</div>
+    <p class="step-sub">Revisá los montos antes de cerrar</p>
+    <div id="summaryContainer"></div>
+    <div class="mt-24 center" id="finalizeSection">
+      <button class="btn btn-accent" style="padding:13px 32px;font-size:.95rem" onclick="finalize()">
+        Finalizar cuenta ✓
+      </button>
+    </div>
+    <div id="doneScreen" style="display:none">
+      <div class="done-divider"></div>
+      <div class="done-screen">
+        <div class="done-check">✓</div>
+        <div class="done-title">¡Cuenta cerrada!</div>
+        <div class="done-sub">Todos saben lo que deben.<br>El ticket de arriba queda como referencia.</div>
+        <button class="btn btn-ghost" onclick="resetApp()">↩ Nueva cuenta</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="bottom-bar">
+  <span class="step-counter" id="stepCounter"></span>
+  <button class="btn btn-ghost" id="prevBtn" onclick="prevStep()" style="display:none">← Atrás</button>
+  <button class="btn btn-accent" id="nextBtn" onclick="nextStep()">Continuar →</button>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────
+let state = {
+  total:0, description:'', items:[], people:[], assignments:{},
+  tip:{mode:'pct',value:0,split:'equal'}, finalized:false
+};
+let currentStep = 0;
+const TOTAL_STEPS = 6;
+let _seed = Date.now();
+const uid = () => 'id_' + (_seed++);
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('spl1t_state');
+    const t = localStorage.getItem('spl1t_step');
+    if (s) state = {...state,...JSON.parse(s)};
+    if (t) currentStep = parseInt(t);
+  } catch(e){}
+}
+function saveState() {
+  try {
+    localStorage.setItem('spl1t_state', JSON.stringify(state));
+    localStorage.setItem('spl1t_step', currentStep);
+  } catch(e){}
+}
+
+// ── FORMAT ─────────────────────────────────────────────────────────
+function fmt(n){ return '$' + Math.round(n).toLocaleString('es-CL'); }
+
+function applyNumberFormat(input) {
+  // On blur: show formatted
+  input.addEventListener('blur', () => {
+    const v = parseFloat(input.value);
+    if (!isNaN(v) && v > 0 && input.type === 'number') {
+      input._raw = v;
+      input.type = 'text';
+      input.value = v.toLocaleString('es-CL');
+    }
+  });
+  // On focus: restore raw
+  input.addEventListener('focus', () => {
+    if (input.type === 'text' && input._raw !== undefined) {
+      input.type = 'number';
+      input.value = input._raw;
+    }
+  });
+}
+
+function getRaw(input) {
+  if (input._raw !== undefined && input.type === 'text') return input._raw;
+  return parseFloat(input.value) || 0;
+}
+
+function resetInput(input) {
+  input.type = 'number';
+  input.value = '';
+  input._raw = undefined;
+}
+
+// ── NAVIGATION ─────────────────────────────────────────────────────
+function renderDots() {
+  const c = document.getElementById('stepDots');
+  c.innerHTML = '';
+  for(let i=0;i<TOTAL_STEPS;i++){
+    const d = document.createElement('div');
+    d.className = 'dot'+(i===currentStep?' active':i<currentStep?' done':'');
+    c.appendChild(d);
+  }
+  const labels=['Total','Ítems','Personas','Consumo','Propina','Resumen'];
+  document.getElementById('stepCounter').textContent = labels[currentStep];
+}
+
+function showStep(n) {
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('step-'+n).classList.add('active');
+  document.getElementById('prevBtn').style.display = n===0?'none':'inline-flex';
+  document.getElementById('nextBtn').style.display = n===TOTAL_STEPS-1?'none':'inline-flex';
+  renderDots();
+  if(n===3) renderAssignments();
+  if(n===4) renderTipCalc();
+  if(n===5) renderSummary();
+}
+
+function nextStep() {
+  if(!validateStep(currentStep)) return;
+  collectStep(currentStep);
+  if(currentStep<TOTAL_STEPS-1){ currentStep++; showStep(currentStep); saveState(); }
+}
+function prevStep() {
+  if(currentStep>0){ currentStep--; showStep(currentStep); saveState(); }
+}
+
+function validateStep(n) {
+  if(n===0){ const v=getRaw(document.getElementById('totalInput')); if(!v||v<=0){alert('Ingresá el total de la cuenta.');return false;} }
+  if(n===1&&state.items.length===0){alert('Agregá al menos un ítem.');return false;}
+  if(n===2&&state.people.length<2){alert('Agregá al menos 2 personas.');return false;}
+  return true;
+}
+
+function collectStep(n) {
+  if(n===0){ state.total=getRaw(document.getElementById('totalInput')); state.description=document.getElementById('descInput').value.trim(); }
+  if(n===4){ state.tip.value=parseFloat(document.getElementById('tipInput').value)||0; }
+}
+
+// ── ITEMS ──────────────────────────────────────────────────────────
+function addItem() {
+  const name  = document.getElementById('itemName').value.trim();
+  const price = getRaw(document.getElementById('itemPrice'));
+  const qty   = parseInt(document.getElementById('itemQty').value) || 1;
+  if(!name){alert('Ingresá el nombre del ítem.');return;}
+  if(!price||price<=0){alert('Ingresá un precio válido.');return;}
+
+  const item = {id:uid(), name, unitPrice:price, qty};
+  state.items.push(item);
+  // Init assignments for ALL existing people
+  state.assignments[item.id] = {};
+  state.people.forEach(p => { state.assignments[item.id][p.id] = 0; });
+
+  document.getElementById('itemName').value = '';
+  resetInput(document.getElementById('itemPrice'));
+  document.getElementById('itemQty').value = '';
+  document.getElementById('itemPreview').innerHTML = '';
+  renderItems();
+  saveState();
+  document.getElementById('itemName').focus();
+}
+
+function removeItem(id) {
+  state.items = state.items.filter(i=>i.id!==id);
+  delete state.assignments[id];
+  renderItems(); saveState();
+}
+
+function updateItemPreview() {
+  const p = getRaw(document.getElementById('itemPrice'));
+  const q = parseInt(document.getElementById('itemQty').value) || 1;
+  const el = document.getElementById('itemPreview');
+  el.innerHTML = p>0 ? `Subtotal: <span class="val">${fmt(p*q)}</span>` : '';
+}
+
+function renderItems() {
+  const el = document.getElementById('itemsList');
+  if(!state.items.length){ el.innerHTML=''; document.getElementById('itemsTotalDisplay').textContent='$0'; return; }
+  el.innerHTML = state.items.map(item=>`
+    <div class="chip-item">
+      <div>
+        <div class="chip-name">${esc(item.name)}</div>
+        <div class="chip-detail">${item.qty} × ${fmt(item.unitPrice)}</div>
+      </div>
+      <div class="chip-right">
+        <span class="chip-price">${fmt(item.unitPrice*item.qty)}</span>
+        <button class="remove-btn" onclick="removeItem('${item.id}')">×</button>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('itemsTotalDisplay').textContent = fmt(state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0));
+}
+
+// ── PEOPLE ─────────────────────────────────────────────────────────
+function addPerson() {
+  const name = document.getElementById('personName').value.trim();
+  if(!name){alert('Ingresá un nombre.');return;}
+  if(state.people.find(p=>p.name.toLowerCase()===name.toLowerCase())){alert('Ya existe esa persona.');return;}
+
+  const person = {id:uid(), name};
+  state.people.push(person);
+  // Init this person in ALL existing items
+  state.items.forEach(item=>{
+    if(!state.assignments[item.id]) state.assignments[item.id]={};
+    state.assignments[item.id][person.id] = 0;
+  });
+
+  document.getElementById('personName').value = '';
+  renderPeople(); saveState();
+  document.getElementById('personName').focus();
+}
+
+function removePerson(id) {
+  state.people = state.people.filter(p=>p.id!==id);
+  Object.keys(state.assignments).forEach(iid=>{ delete state.assignments[iid][id]; });
+  renderPeople(); saveState();
+}
+
+function renderPeople() {
+  document.getElementById('peopleList').innerHTML = state.people.map(p=>`
+    <div class="person-chip">
+      <span>${esc(p.name)}</span>
+      <button onclick="removePerson('${p.id}')">×</button>
+    </div>
+  `).join('');
+}
+
+// ── SANITIZE (defensive) ───────────────────────────────────────────
+function sanitize() {
+  state.items.forEach(item=>{
+    if(!state.assignments[item.id]) state.assignments[item.id]={};
+    state.people.forEach(p=>{
+      if(state.assignments[item.id][p.id]===undefined) state.assignments[item.id][p.id]=0;
+    });
+  });
+}
+
+// ── ASSIGNMENTS ────────────────────────────────────────────────────
+function renderAssignments() {
+  sanitize();
+  const c = document.getElementById('assignmentContainer');
+  if(!state.items.length||!state.people.length){
+    c.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-muted);font-family:JetBrains Mono,monospace;font-size:.82rem">No hay ítems o personas cargadas.</div>';
+    return;
+  }
+  c.innerHTML = state.items.map(item=>{
+    const subtotal = item.unitPrice*item.qty;
+    const rows = state.people.map(p=>{
+      const val = state.assignments[item.id][p.id]||0;
+      return `
+        <div class="assign-row">
+          <span class="assign-person-name">${esc(p.name)}</span>
+          <div class="assign-right">
+            <input class="assign-input" type="number" min="0" step="0.5"
+              value="${val||''}" placeholder="0"
+              oninput="onAssignInput('${item.id}','${p.id}',this.value)">
+            <span class="assign-share" id="shr-${item.id}-${p.id}">—</span>
+          </div>
+        </div>`;
+    }).join('');
+    return `
+      <div class="assign-card">
+        <div class="assign-header">
+          <div>
+            <div class="assign-item-name">${esc(item.name)}</div>
+            <div class="assign-item-meta">${item.qty} × ${fmt(item.unitPrice)}</div>
+          </div>
+          <span class="assign-item-price">${fmt(subtotal)}</span>
+        </div>
+        <div class="assign-body">
+          <div class="assign-quick-btns">
+            <button class="assign-quick" onclick="splitEqual('${item.id}')">÷ Dividir igual</button>
+            <button class="assign-quick" onclick="clearAssign('${item.id}')">✕ Limpiar</button>
+          </div>
+          ${rows}
+          <div class="assign-warning" id="wrn-${item.id}"></div>
+        </div>
+      </div>`;
+  }).join('');
+  refreshAllShares();
+}
+
+function onAssignInput(itemId, personId, val) {
+  if(!state.assignments[itemId]) state.assignments[itemId]={};
+  state.assignments[itemId][personId] = parseFloat(val)||0;
+  refreshShares(itemId); saveState();
+}
+
+function refreshShares(itemId) {
+  const asgn  = state.assignments[itemId]||{};
+  const total = Object.values(asgn).reduce((s,v)=>s+v,0);
+  const item  = state.items.find(i=>i.id===itemId);
+  const subtotal = item.unitPrice*item.qty;
+  const warn  = document.getElementById('wrn-'+itemId);
+  state.people.forEach(p=>{
+    const el  = document.getElementById(`shr-${itemId}-${p.id}`);
+    if(!el) return;
+    const qty = asgn[p.id]||0;
+    if(total>0&&qty>0){ el.textContent=fmt((qty/total)*subtotal); el.className='assign-share has-val'; }
+    else { el.textContent='—'; el.className='assign-share'; }
+  });
+  if(warn) warn.textContent = total===0 ? '⚠ Nadie tiene asignado este ítem.' : '';
+}
+
+function refreshAllShares() { state.items.forEach(i=>refreshShares(i.id)); }
+
+function splitEqual(itemId) {
+  sanitize();
+  state.people.forEach(p=>{
+    state.assignments[itemId][p.id]=1;
+    const inp = document.querySelector(`[oninput*="'${itemId}','${p.id}'"]`);
+    if(inp) inp.value='1';
+  });
+  refreshShares(itemId); saveState();
+}
+
+function clearAssign(itemId) {
+  sanitize();
+  state.people.forEach(p=>{
+    state.assignments[itemId][p.id]=0;
+    const inp = document.querySelector(`[oninput*="'${itemId}','${p.id}'"]`);
+    if(inp) inp.value='';
+  });
+  refreshShares(itemId); saveState();
+}
+
+// ── TIP ────────────────────────────────────────────────────────────
+function setTipMode(mode) {
+  state.tip.mode=mode;
+  document.getElementById('tipPctBtn').classList.toggle('active',mode==='pct');
+  document.getElementById('tipAmtBtn').classList.toggle('active',mode==='amt');
+  document.getElementById('tipLabel').textContent = mode==='pct'?'Porcentaje':'Monto fijo';
+  document.getElementById('tipInput').placeholder  = mode==='pct'?'10':'2000';
+  renderTipCalc();
+}
+function setTipSplit(split) {
+  state.tip.split=split;
+  document.getElementById('tipEqBtn').classList.toggle('active',split==='equal');
+  document.getElementById('tipPropBtn').classList.toggle('active',split==='prop');
+  renderTipCalc();
+}
+function getTipAmount() {
+  const sub = state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0);
+  return state.tip.mode==='pct' ? sub*((state.tip.value||0)/100) : (state.tip.value||0);
+}
+function renderTipCalc() {
+  state.tip.value = parseFloat(document.getElementById('tipInput').value)||0;
+  const sub    = state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0);
+  const tipAmt = getTipAmount();
+  document.getElementById('tipDisplay').innerHTML = tipAmt>0
+    ? `Propina: <span class="val">${fmt(tipAmt)}</span> · Total con propina: <span class="val">${fmt(sub+tipAmt)}</span>` : '';
+}
+
+// ── CALC ───────────────────────────────────────────────────────────
+function calcAmounts() {
+  sanitize();
+  const res={};
+  state.people.forEach(p=>{ res[p.id]={base:0,items:[],tip:0,total:0}; });
+  state.items.forEach(item=>{
+    const asgn     = state.assignments[item.id]||{};
+    const totalQty = Object.values(asgn).reduce((s,v)=>s+v,0);
+    const subtotal = item.unitPrice*item.qty;
+    if(totalQty===0) return;
+    state.people.forEach(p=>{
+      const qty=asgn[p.id]||0;
+      if(qty>0){ const amt=(qty/totalQty)*subtotal; res[p.id].base+=amt; res[p.id].items.push({name:item.name,amt}); }
+    });
+  });
+  const tipAmt  = getTipAmount();
+  const baseSum = Object.values(res).reduce((s,r)=>s+r.base,0);
+  state.people.forEach(p=>{
+    let tip=0;
+    if(tipAmt>0){
+      tip = state.tip.split==='equal' ? tipAmt/state.people.length : (baseSum>0?(res[p.id].base/baseSum)*tipAmt:0);
+    }
+    res[p.id].tip=tip; res[p.id].total=res[p.id].base+tip;
+  });
+  return res;
+}
+
+// ── SUMMARY ────────────────────────────────────────────────────────
+function renderSummary() {
+  const amounts  = calcAmounts();
+  const subtotal = state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0);
+  const tipAmt   = getTipAmount();
+  const grand    = subtotal+tipAmt;
+  const diff     = Math.abs(grand-state.total);
+  const now      = new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'});
+
+  const personsHTML = state.people.map(p=>{
+    const d=amounts[p.id];
+    const detail=d.items.map(i=>`${esc(i.name)}: ${fmt(i.amt)}`).join('\n');
+    return `
+      <div class="ticket-person">
+        <div>
+          <div class="ticket-person-name">${esc(p.name)}</div>
+          <div class="ticket-person-detail">${detail||'Sin consumo asignado'}</div>
+        </div>
+        <div class="ticket-amount">
+          <div class="main">${fmt(d.total)}</div>
+          ${d.tip>0?`<div class="tip-note">incl. propina ${fmt(d.tip)}</div>`:''}
+        </div>
+      </div>`;
+  }).join('');
+
+  const verifyOk = diff<2;
+  document.getElementById('summaryContainer').innerHTML = `
+    <div class="ticket">
+      <div class="ticket-head">
+        <div class="ticket-label">spl1t! · resumen</div>
+        <div class="ticket-grand">${fmt(grand)}</div>
+        <div class="ticket-desc">${esc(state.description)||'Cuenta'} · ${now}</div>
+      </div>
+      <hr class="ticket-divider" style="margin-top:16px">
+      <div class="ticket-body">${personsHTML}</div>
+      ${tipAmt>0?`<div style="padding:0 22px 4px;font-family:'JetBrains Mono',monospace;font-size:.73rem;color:var(--text-muted)">Propina total: ${fmt(tipAmt)}</div>`:''}
+      <div class="ticket-footer">
+        <div class="verify-bar ${verifyOk?'ok':'warn'}">
+          <span>${verifyOk?'✓':'⚠'}</span>
+          <span>${verifyOk
+            ?`El total calculado coincide con el ingresado (${fmt(grand)})`
+            :`Diferencia de ${fmt(diff)} — Ingresado: ${fmt(state.total)} · Calculado: ${fmt(grand)}`
+          }</span>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('finalizeSection').style.display = state.finalized?'none':'block';
+  document.getElementById('doneScreen').style.display = state.finalized?'block':'none';
+}
+
+// ── FINALIZE ───────────────────────────────────────────────────────
+function finalize() {
+  state.finalized=true; saveState();
+  document.getElementById('finalizeSection').style.display='none';
+  const done=document.getElementById('doneScreen');
+  done.style.display='block';
+  setTimeout(()=>done.scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
+
+// ── RESET ──────────────────────────────────────────────────────────
+function resetApp() {
+  localStorage.removeItem('spl1t_state');
+  localStorage.removeItem('spl1t_step');
+  state={total:0,description:'',items:[],people:[],assignments:{},tip:{mode:'pct',value:0,split:'equal'},finalized:false};
+  currentStep=0;
+  ['descInput','itemName','personName'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  resetInput(document.getElementById('totalInput'));
+  resetInput(document.getElementById('itemPrice'));
+  document.getElementById('itemQty').value='';
+  document.getElementById('tipInput').value='';
+  document.getElementById('itemPreview').innerHTML='';
+  document.getElementById('tipDisplay').innerHTML='';
+  setTipMode('pct'); setTipSplit('equal');
+  renderItems(); renderPeople();
+  showStep(0);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── INIT ───────────────────────────────────────────────────────────
+loadState();
+if(state.total)       document.getElementById('totalInput').value=state.total;
+if(state.description) document.getElementById('descInput').value=state.description;
+if(state.tip.value)   document.getElementById('tipInput').value=state.tip.value;
+setTipMode(state.tip.mode);
+setTipSplit(state.tip.split);
+renderItems(); renderPeople();
+showStep(currentStep);
+
+// Apply format events
+applyNumberFormat(document.getElementById('totalInput'));
+applyNumberFormat(document.getElementById('itemPrice'));
+
+// Preview listeners
+document.getElementById('itemPrice').addEventListener('input', updateItemPreview);
+document.getElementById('itemQty').addEventListener('input', updateItemPreview);
+
+// Enter shortcuts
+document.getElementById('itemName').addEventListener('keydown',  e=>{ if(e.key==='Enter') addItem(); });
+document.getElementById('itemPrice').addEventListener('keydown', e=>{ if(e.key==='Enter') addItem(); });
+document.getElementById('itemQty').addEventListener('keydown',   e=>{ if(e.key==='Enter') addItem(); });
+</script>
+</body>
+</html>
