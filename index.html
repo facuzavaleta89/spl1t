@@ -167,11 +167,9 @@
     .assign-row:last-of-type { border-bottom:none; }
     .assign-person-name { font-size:.88rem;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
     .assign-right { display:flex;align-items:center;gap:8px;flex-shrink:0; }
-    .qty-control { display:flex;align-items:center;gap:5px;width:148px; }
     .assign-input {
-      flex:1;min-width:0;
-      background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;
-      padding:11px 4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
+      width:68px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;
+      padding:11px 9px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
       outline:none;text-align:center;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;
     }
     .assign-input::-webkit-outer-spin-button,.assign-input::-webkit-inner-spin-button{-webkit-appearance:none;}
@@ -931,13 +929,9 @@ function renderAssignments() {
         <div class="assign-row">
           <span class="assign-person-name">${esc(p.name)}</span>
           <div class="assign-right">
-            <div class="qty-control">
-              <button class="qty-btn" onclick="stepAssign('${item.id}','${p.id}',-0.5)">−</button>
-              <input class="assign-input" type="number" min="0" step="0.5"
-                value="${val||''}" placeholder="0"
-                oninput="onAssignInput('${item.id}','${p.id}',this.value)">
-              <button class="qty-btn" onclick="stepAssign('${item.id}','${p.id}',0.5)">+</button>
-            </div>
+            <input class="assign-input" type="number" min="0" step="0.5"
+              value="${val||''}" placeholder="0"
+              oninput="onAssignInput('${item.id}','${p.id}',this.value)">
             <span class="assign-share" id="shr-${item.id}-${p.id}">—</span>
           </div>
         </div>`;
