@@ -95,22 +95,59 @@
       display:flex;align-items:center;justify-content:space-between;
       background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
       animation:fadeUp .22s ease;
+      position:relative;overflow:hidden;
+      transition:transform .2s ease, opacity .2s ease, border-color .2s;
+      touch-action:pan-y;
+      user-select:none;
     }
+    .chip-item.removing { animation: fadeOut .22s ease forwards; }
+    .chip-item.editing  { border-color: var(--accent); background: rgba(170,255,0,.04); }
+    @keyframes fadeOut { to { opacity:0; transform:translateX(30px); max-height:0; padding:0; margin:0; border-width:0; } }
     .chip-name { font-weight:700;font-size:.92rem; }
     .chip-detail { font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--text-muted);margin-top:2px; }
     .chip-price { font-family:'JetBrains Mono',monospace;font-size:.9rem;font-weight:600;color:var(--accent);margin-right:8px; }
     .chip-right { display:flex;align-items:center;gap:6px; }
+    .edit-btn { background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.85rem;line-height:1;transition:color .2s;padding:4px 6px;border-radius:5px;min-width:32px;min-height:32px;display:inline-flex;align-items:center;justify-content:center; }
+    .edit-btn:hover { color:var(--accent);background:var(--accent-dim); }
     .remove-btn { background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.15rem;line-height:1;transition:color .2s;padding:2px 5px;border-radius:5px; }
     .remove-btn:hover { color:var(--red);background:var(--red-dim); }
 
-    .person-chips { display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px; }
+    /* Swipe delete hint */
+    .swipe-delete {
+      position:absolute;right:0;top:0;bottom:0;
+      background:var(--red);color:#fff;
+      display:flex;align-items:center;padding:0 18px;
+      font-size:.8rem;font-weight:700;
+      transform:translateX(100%);transition:transform .18s ease;
+      border-radius:0 12px 12px 0;
+      pointer-events:none;
+    }
+
     .person-chip {
       display:flex;align-items:center;gap:5px;background:var(--surface);
       border:1px solid var(--border);border-radius:99px;padding:6px 10px 6px 13px;
       font-size:.86rem;font-weight:600;animation:fadeUp .22s ease;
+      position:relative;overflow:hidden;touch-action:pan-y;user-select:none;
+      transition:opacity .2s, transform .2s;
     }
-    .person-chip button { background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:.9rem;line-height:1;transition:color .2s;padding:1px 3px; }
+    .person-chip.removing { animation: fadeOut .22s ease forwards; }
+    .person-chip button { background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:.9rem;line-height:1;transition:color .2s;padding:1px 3px;min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center; }
     .person-chip button:hover { color:var(--red); }
+
+    /* Edit form active state */
+    .card.editing-mode { border-color:var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+    .edit-mode-label { font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);margin-bottom:10px;display:block; }
+
+    /* Assign total bar */
+    .assign-total-bar {
+      margin-top:16px;padding:12px 16px;
+      background:rgba(170,255,0,.05);border:1px solid rgba(170,255,0,.15);
+      border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:.78rem;
+      color:var(--text-muted);display:flex;justify-content:space-between;align-items:center;
+    }
+    .assign-total-bar .val { color:var(--accent);font-weight:600; }
+
+    .person-chips { display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px; }
 
     .assign-card { background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden; }
     .assign-header { padding:13px 17px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02); }
@@ -314,7 +351,11 @@
         </div>
       </div>
       <div class="info-row" id="itemPreview" style="margin-bottom:10px;min-height:18px"></div>
-      <button class="btn btn-ghost btn-full" onclick="addItem()">+ Agregar ítem</button>
+      <span class="edit-mode-label" id="editModeLabel" style="display:none">✏️ Editando ítem — guardá los cambios o cancelá</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-full" id="cancelEditBtn" onclick="cancelEdit()" style="display:none">Cancelar</button>
+        <button class="btn btn-ghost btn-full" id="addItemBtn" onclick="addItem()">+ Agregar ítem</button>
+      </div>
     </div>
     <div class="info-row mt-10">Subtotal ítems: <span class="val" id="itemsTotalDisplay">$0</span></div>
   </div>
@@ -531,6 +572,12 @@ function collectStep(n) {
   if(n===4){ state.tip.value=parseFloat(document.getElementById('tipInput').value)||0; }
 }
 
+// ── EDIT STATE ─────────────────────────────────────────────────────
+let editingItemId = null;
+
+// ── VIBRATION ──────────────────────────────────────────────────────
+function vibrate(ms=30) { try { navigator.vibrate && navigator.vibrate(ms); } catch(e){} }
+
 // ── ITEMS ──────────────────────────────────────────────────────────
 function addItem() {
   const name  = document.getElementById('itemName').value.trim();
@@ -539,9 +586,20 @@ function addItem() {
   if(!name){toast('Ingresá el nombre del ítem.');return;}
   if(!price||price<=0){toast('Ingresá un precio válido.');return;}
 
+  vibrate();
+
+  if(editingItemId) {
+    const item = state.items.find(i=>i.id===editingItemId);
+    if(item){ item.name=name; item.unitPrice=price; item.qty=qty; }
+    cancelEdit();
+    renderItems();
+    saveState();
+    toast('Ítem actualizado', 'ok');
+    return;
+  }
+
   const item = {id:uid(), name, unitPrice:price, qty};
   state.items.push(item);
-  // Init assignments for ALL existing people
   state.assignments[item.id] = {};
   state.people.forEach(p => { state.assignments[item.id][p.id] = 0; });
 
@@ -551,13 +609,63 @@ function addItem() {
   document.getElementById('itemPreview').innerHTML = '';
   renderItems();
   saveState();
+  setTimeout(()=>{
+    const chips = document.querySelectorAll('#itemsList .chip-item');
+    if(chips.length) chips[chips.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});
+  }, 80);
   document.getElementById('itemName').focus();
 }
 
+function startEditItem(id) {
+  const item = state.items.find(i=>i.id===id);
+  if(!item) return;
+  editingItemId = id;
+  document.getElementById('itemName').value = item.name;
+  const priceInput = document.getElementById('itemPrice');
+  resetInput(priceInput);
+  priceInput.value = item.unitPrice;
+  document.getElementById('itemQty').value = item.qty;
+  updateItemPreview();
+  document.getElementById('addItemBtn').textContent = '💾 Guardar cambios';
+  document.getElementById('cancelEditBtn').style.display = 'inline-flex';
+  document.getElementById('editModeLabel').style.display = 'block';
+  document.querySelector('#step-1 .card').classList.add('editing-mode');
+  document.querySelectorAll('.chip-item').forEach(el=>{
+    el.classList.toggle('editing', el.dataset.id===id);
+  });
+  document.getElementById('itemName').focus();
+  document.querySelector('#step-1 .card').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function cancelEdit() {
+  editingItemId = null;
+  document.getElementById('itemName').value = '';
+  resetInput(document.getElementById('itemPrice'));
+  document.getElementById('itemQty').value = '';
+  document.getElementById('itemPreview').innerHTML = '';
+  document.getElementById('addItemBtn').textContent = '+ Agregar ítem';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+  document.getElementById('editModeLabel').style.display = 'none';
+  document.querySelector('#step-1 .card').classList.remove('editing-mode');
+  document.querySelectorAll('.chip-item').forEach(el=>el.classList.remove('editing'));
+}
+
 function removeItem(id) {
-  state.items = state.items.filter(i=>i.id!==id);
-  delete state.assignments[id];
-  renderItems(); saveState();
+  const el = document.querySelector(`.chip-item[data-id="${id}"]`);
+  vibrate(20);
+  if(el) {
+    el.classList.add('removing');
+    setTimeout(()=>{
+      state.items = state.items.filter(i=>i.id!==id);
+      delete state.assignments[id];
+      if(editingItemId===id) cancelEdit();
+      renderItems(); saveState();
+    }, 210);
+  } else {
+    state.items = state.items.filter(i=>i.id!==id);
+    delete state.assignments[id];
+    renderItems(); saveState();
+  }
 }
 
 function updateItemPreview() {
@@ -571,18 +679,20 @@ function renderItems() {
   const el = document.getElementById('itemsList');
   if(!state.items.length){ el.innerHTML=''; document.getElementById('itemsTotalDisplay').textContent='$0'; return; }
   el.innerHTML = state.items.map(item=>`
-    <div class="chip-item">
-      <div>
+    <div class="chip-item" data-id="${item.id}">
+      <div style="flex:1;min-width:0">
         <div class="chip-name">${esc(item.name)}</div>
         <div class="chip-detail">${item.qty} × ${fmt(item.unitPrice)}</div>
       </div>
       <div class="chip-right">
         <span class="chip-price">${fmt(item.unitPrice*item.qty)}</span>
+        <button class="edit-btn" onclick="startEditItem('${item.id}')">✏️</button>
         <button class="remove-btn" onclick="removeItem('${item.id}')">×</button>
       </div>
     </div>
   `).join('');
   document.getElementById('itemsTotalDisplay').textContent = fmt(state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0));
+  initSwipe();
 }
 
 // ── PEOPLE ─────────────────────────────────────────────────────────
@@ -591,9 +701,9 @@ function addPerson() {
   if(!name){toast('Ingresá un nombre.');return;}
   if(state.people.find(p=>p.name.toLowerCase()===name.toLowerCase())){toast('Ya existe esa persona.');return;}
 
+  vibrate();
   const person = {id:uid(), name};
   state.people.push(person);
-  // Init this person in ALL existing items
   state.items.forEach(item=>{
     if(!state.assignments[item.id]) state.assignments[item.id]={};
     state.assignments[item.id][person.id] = 0;
@@ -601,22 +711,62 @@ function addPerson() {
 
   document.getElementById('personName').value = '';
   renderPeople(); saveState();
+  setTimeout(()=>{
+    const chips = document.querySelectorAll('.person-chip');
+    if(chips.length) chips[chips.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});
+  }, 80);
   document.getElementById('personName').focus();
 }
 
 function removePerson(id) {
-  state.people = state.people.filter(p=>p.id!==id);
-  Object.keys(state.assignments).forEach(iid=>{ delete state.assignments[iid][id]; });
-  renderPeople(); saveState();
+  const el = document.querySelector(`.person-chip[data-id="${id}"]`);
+  vibrate(20);
+  if(el) {
+    el.classList.add('removing');
+    setTimeout(()=>{
+      state.people = state.people.filter(p=>p.id!==id);
+      Object.keys(state.assignments).forEach(iid=>{ delete state.assignments[iid][id]; });
+      renderPeople(); saveState();
+    }, 210);
+  } else {
+    state.people = state.people.filter(p=>p.id!==id);
+    Object.keys(state.assignments).forEach(iid=>{ delete state.assignments[iid][id]; });
+    renderPeople(); saveState();
+  }
 }
 
 function renderPeople() {
   document.getElementById('peopleList').innerHTML = state.people.map(p=>`
-    <div class="person-chip">
+    <div class="person-chip" data-id="${p.id}">
       <span>${esc(p.name)}</span>
       <button onclick="removePerson('${p.id}')">×</button>
     </div>
   `).join('');
+}
+
+// ── SWIPE TO DELETE ────────────────────────────────────────────────
+function initSwipe() {
+  document.querySelectorAll('.chip-item').forEach(el=>{
+    let startX=0, startY=0, dx=0;
+    el.addEventListener('touchstart', e=>{
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      dx = 0;
+    }, {passive:true});
+    el.addEventListener('touchmove', e=>{
+      dx = e.touches[0].clientX - startX;
+      const dy = Math.abs(e.touches[0].clientY - startY);
+      if(Math.abs(dx) < dy) return; // vertical scroll, ignore
+      if(dx < 0) el.style.transform = `translateX(${Math.max(dx,-80)}px)`;
+    }, {passive:true});
+    el.addEventListener('touchend', ()=>{
+      if(dx < -60) {
+        removeItem(el.dataset.id);
+      } else {
+        el.style.transform = '';
+      }
+    });
+  });
 }
 
 // ── SANITIZE (defensive) ───────────────────────────────────────────
@@ -671,13 +821,31 @@ function renderAssignments() {
         </div>
       </div>`;
   }).join('');
+
+  // Running total bar
+  c.innerHTML += `<div class="assign-total-bar" id="assignTotalBar">
+    <span>Total asignado</span>
+    <span id="assignTotalVal" class="val">$0</span>
+  </div>`;
+
   refreshAllShares();
+  refreshAssignTotal();
 }
 
 function onAssignInput(itemId, personId, val) {
   if(!state.assignments[itemId]) state.assignments[itemId]={};
   state.assignments[itemId][personId] = parseFloat(val)||0;
-  refreshShares(itemId); saveState();
+  refreshShares(itemId);
+  refreshAssignTotal();
+  saveState();
+}
+
+function refreshAssignTotal() {
+  const el = document.getElementById('assignTotalVal');
+  if(!el) return;
+  const total = calcAmounts();
+  const sum = Object.values(total).reduce((s,r)=>s+r.base,0);
+  el.textContent = fmt(sum);
 }
 
 function refreshShares(itemId) {
