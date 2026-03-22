@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="icon-192.png">
   <title>spl1t!</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#07070f">
@@ -220,13 +219,22 @@
     .done-title { font-size:1.65rem;font-weight:800;letter-spacing:-.02em;margin-bottom:8px; }
     .done-sub { font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text-muted);margin-bottom:26px;line-height:1.7; }
 
-    /* ─── STEP NAV (en flujo, no fijo) ─── */
+    /* ─── STEP NAV (mobile: en flujo) ─── */
     .step-nav {
       display:flex;gap:9px;justify-content:flex-end;align-items:center;
       margin-top:56px;
       padding-bottom: calc(24px + env(safe-area-inset-bottom));
     }
     .step-counter { font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-muted);margin-right:auto; }
+
+    /* ─── BOTTOM BAR (desktop: fija con glassmorphism) ─── */
+    .bottom-bar {
+      display:none;
+      position:fixed;bottom:0;left:0;right:0;padding:10px 24px;
+      background:rgba(7,7,15,.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+      border-top:1px solid var(--border);gap:9px;justify-content:flex-end;
+      z-index:100;align-items:center;
+    }
 
     .reset-link {
       background:none;border:none;color:var(--text-muted);font-size:.76rem;
@@ -292,11 +300,22 @@
       .done-check { width: 60px; height: 60px; font-size: 1.7rem; }
     }
 
-    /* ─── Tablets y desktop ≥ 600px ─── */
-    @media (min-width: 600px) {
-      main { padding-left: 24px; padding-right: 24px; }
-      .step-title { font-size: 2.1rem; }
+    /* ─── Desktop ≥ 768px: bottom bar fija, UI más grande ─── */
+    @media (min-width: 768px) {
+      main { padding-left: 24px; padding-right: 24px; padding-bottom: 90px; }
+      .step-title { font-size: 2.4rem; }
+      .step-sub { font-size: .92rem; margin-bottom: 32px; }
       .ticket-grand { font-size: 3rem; }
+      .card { padding: 24px; }
+      input[type="text"], input[type="number"] { font-size: 1.05rem; padding: 13px 16px; }
+      .chip-name { font-size: 1rem; }
+      .chip-detail { font-size: .82rem; }
+      .assign-item-name { font-size: 1.05rem; }
+      .btn { font-size: .95rem; padding: 13px 22px; }
+
+      /* Ocultar step-nav, mostrar bottom-bar */
+      .step-nav { display: none; }
+      .bottom-bar { display: flex; }
     }
   </style>
 </head>
@@ -458,6 +477,14 @@
 
 <div id="toast"><span class="t-icon"></span><span id="toastMsg"></span></div>
 
+<!-- Bottom bar: solo visible en desktop vía CSS -->
+<div class="bottom-bar">
+  <span class="step-counter" id="stepCounter-desktop"></span>
+  <button class="btn btn-ghost" id="prevBtnDesktop" onclick="prevStep()" style="display:none">← Atrás</button>
+  <button class="btn btn-ghost" id="clearBtnDesktop" onclick="clearData()" style="display:none">🗑 Limpiar</button>
+  <button class="btn btn-accent" id="nextBtnDesktop" onclick="nextStep()" style="display:none">Continuar →</button>
+</div>
+
 <script>
 // ── STATE ──────────────────────────────────────────────────────────
 let state = {
@@ -557,19 +584,31 @@ function renderDots() {
     c.appendChild(d);
   }
   const labels=['Total','Ítems','Personas','Consumo','Propina','Resumen'];
-  // Update counter in current step nav
   for(let i=0;i<TOTAL_STEPS;i++){
     const el = document.getElementById('stepCounter-'+i);
     if(el) el.textContent = labels[i];
   }
+  // Desktop bottom bar counter
+  const dc = document.getElementById('stepCounter-desktop');
+  if(dc) dc.textContent = labels[currentStep];
 }
 
 function showStep(n) {
   document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('step-'+n).classList.add('active');
-  // Hide back button on step 5 if finalized
+
+  // Desktop bottom bar buttons
+  const prevD  = document.getElementById('prevBtnDesktop');
+  const clearD = document.getElementById('clearBtnDesktop');
+  const nextD  = document.getElementById('nextBtnDesktop');
+  if(prevD)  prevD.style.display  = n > 0 && n < TOTAL_STEPS-1 ? 'inline-flex' : 'none';
+  if(clearD) clearD.style.display = n === 0 ? 'inline-flex' : 'none';
+  if(nextD)  nextD.style.display  = n < TOTAL_STEPS-1 ? 'inline-flex' : 'none';
+
+  // Step 5 nav (mobile back btn)
   const nav5 = document.getElementById('stepNav-5');
   if(nav5) nav5.style.display = state.finalized ? 'none' : 'flex';
+
   renderDots();
   if(n===3) renderAssignments();
   if(n===4) renderTipCalc();
@@ -1023,6 +1062,10 @@ function finalize() {
   document.getElementById('finalizeSection').style.display='none';
   const nav5 = document.getElementById('stepNav-5');
   if(nav5) nav5.style.display='none';
+  const nextD = document.getElementById('nextBtnDesktop');
+  if(nextD) nextD.style.display='none';
+  const prevD = document.getElementById('prevBtnDesktop');
+  if(prevD) prevD.style.display='none';
   const done=document.getElementById('doneScreen');
   done.style.display='block';
   setTimeout(()=>done.scrollIntoView({behavior:'smooth',block:'start'}),50);
