@@ -67,7 +67,7 @@
     input[type="text"], input[type="number"] {
       background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;
       padding:11px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
-      outline:none;transition:border-color .2s,box-shadow .2s,background .2s;
+      outline:none;transition:border-color .2s,box-shadow .2s,background .2s;width:100%;
       -moz-appearance:textfield;
     }
     .input-group input[type="text"], .input-group input[type="number"] { width:100%; }
@@ -167,10 +167,9 @@
     .assign-row:last-of-type { border-bottom:none; }
     .assign-person-name { font-size:.88rem;font-weight:600; }
     .assign-right { display:flex;align-items:center;gap:8px; }
-    .assign-input {
-      width:68px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;
-      padding:6px 9px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.88rem;
-      outline:none;text-align:center;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;
+    .assign-right .assign-input {
+      width:68px;padding:6px 9px;font-size:.88rem;border-radius:8px;
+      background:rgba(255,255,255,.05);text-align:center;
     }
     .assign-input::-webkit-outer-spin-button,.assign-input::-webkit-inner-spin-button{-webkit-appearance:none;}
     .assign-input:focus { border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim); }
