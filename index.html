@@ -168,10 +168,12 @@
     .assign-person-name { font-size:.88rem;font-weight:600;flex:1;min-width:0; }
     .assign-right { display:flex;align-items:center;gap:8px;flex-shrink:0; }
     .assign-input {
-      width:38px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;
-      padding:11px 2px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
+      width:48px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;
+      padding:11px 4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
       outline:none;text-align:center;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;
     }
+    .assign-right { display:flex;align-items:center;gap:8px;flex-shrink:0; }
+    .qty-control { display:flex;align-items:center;justify-content:center;gap:5px; }
     .assign-input::-webkit-outer-spin-button,.assign-input::-webkit-inner-spin-button{-webkit-appearance:none;}
     .assign-input:focus { border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim); }
     .assign-share { font-family:'JetBrains Mono',monospace;font-size:.75rem;min-width:56px;text-align:right;color:var(--text-dim); }
@@ -179,7 +181,6 @@
     .assign-warning { font-size:.73rem;color:var(--red);margin-top:7px;font-family:'JetBrains Mono',monospace; }
 
     /* +/- buttons assign — igual que item-qty */
-    .qty-control { display:flex;align-items:center;gap:5px; }
     .qty-btn {
       width:36px;height:44px;border-radius:10px;border:1px solid var(--border);
       background:var(--surface);color:var(--text);font-size:1.15rem;line-height:1;
