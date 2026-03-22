@@ -48,7 +48,7 @@
     .dot.done { background:rgba(170,255,0,.35); }
     .dot.active { background:var(--accent);width:22px;box-shadow:0 0 8px var(--accent-glow); }
 
-    main { position:relative;z-index:1;max-width:560px;margin:0 auto;padding:28px 16px 100px; }
+    main { position:relative;z-index:1;max-width:560px;margin:0 auto;padding:28px 16px 0; }
 
     .step-panel { display:none; }
     .step-panel.active { display:block;animation:fadeUp .32s cubic-bezier(.4,0,.2,1) forwards; }
@@ -219,10 +219,11 @@
     .done-title { font-size:1.65rem;font-weight:800;letter-spacing:-.02em;margin-bottom:8px; }
     .done-sub { font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text-muted);margin-bottom:26px;line-height:1.7; }
 
-    .bottom-bar {
-      position:fixed;bottom:0;left:0;right:0;padding:10px 16px;
-      background:rgba(7,7,15,.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-      border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end;z-index:100;align-items:center;
+    /* ─── STEP NAV (en flujo, no fijo) ─── */
+    .step-nav {
+      display:flex;gap:9px;justify-content:flex-end;align-items:center;
+      margin-top:28px;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
     }
     .step-counter { font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-muted);margin-right:auto; }
 
@@ -252,9 +253,7 @@
 
     /* ─── RESPONSIVE ─── */
 
-    /* Safe area para iPhone con notch/dynamic island */
-    main { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
-    .bottom-bar { padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+    /* Safe area — ya manejada en .step-nav */
 
     /* Touch targets mínimos 44px */
     .btn { min-height: 44px; }
@@ -297,7 +296,6 @@
       main { padding-left: 24px; padding-right: 24px; }
       .step-title { font-size: 2.1rem; }
       .ticket-grand { font-size: 3rem; }
-      .bottom-bar { padding-left: 24px; padding-right: 24px; }
     }
   </style>
 </head>
@@ -328,6 +326,11 @@
       </div>
     </div>
     <p class="info-row">Este valor se usa al final para verificar que los números coincidan.</p>
+    <div class="step-nav">
+      <span class="step-counter" id="stepCounter-0"></span>
+      <button class="btn btn-ghost" id="clearBtn" onclick="clearData()">🗑 Limpiar</button>
+      <button class="btn btn-accent" onclick="nextStep()">Continuar →</button>
+    </div>
   </div>
 
   <!-- STEP 1 -->
@@ -358,6 +361,11 @@
       </div>
     </div>
     <div class="info-row mt-10">Subtotal ítems: <span class="val" id="itemsTotalDisplay">$0</span></div>
+    <div class="step-nav">
+      <span class="step-counter" id="stepCounter-1"></span>
+      <button class="btn btn-ghost" onclick="prevStep()">← Atrás</button>
+      <button class="btn btn-accent" onclick="nextStep()">Continuar →</button>
+    </div>
   </div>
 
   <!-- STEP 2 -->
@@ -373,6 +381,11 @@
       </div>
       <button class="btn btn-ghost btn-full" onclick="addPerson()">+ Agregar persona</button>
     </div>
+    <div class="step-nav">
+      <span class="step-counter" id="stepCounter-2"></span>
+      <button class="btn btn-ghost" onclick="prevStep()">← Atrás</button>
+      <button class="btn btn-accent" onclick="nextStep()">Continuar →</button>
+    </div>
   </div>
 
   <!-- STEP 3 -->
@@ -380,6 +393,11 @@
     <div class="step-title">Asigná el consumo</div>
     <p class="step-sub">Indicá cuánto consumió cada uno. Usá 0.5 para mitades.</p>
     <div id="assignmentContainer"></div>
+    <div class="step-nav">
+      <span class="step-counter" id="stepCounter-3"></span>
+      <button class="btn btn-ghost" onclick="prevStep()">← Atrás</button>
+      <button class="btn btn-accent" onclick="nextStep()">Continuar →</button>
+    </div>
   </div>
 
   <!-- STEP 4 -->
@@ -403,6 +421,11 @@
       </div>
       <div class="info-row mt-10" id="tipDisplay"></div>
     </div>
+    <div class="step-nav">
+      <span class="step-counter" id="stepCounter-4"></span>
+      <button class="btn btn-ghost" onclick="prevStep()">← Atrás</button>
+      <button class="btn btn-accent" onclick="nextStep()">Continuar →</button>
+    </div>
   </div>
 
   <!-- STEP 5 -->
@@ -424,18 +447,15 @@
         <button class="btn btn-ghost" onclick="resetApp()">↩ Nueva cuenta</button>
       </div>
     </div>
+    <div class="step-nav" id="stepNav-5">
+      <span class="step-counter" id="stepCounter-5"></span>
+      <button class="btn btn-ghost" onclick="prevStep()">← Atrás</button>
+    </div>
   </div>
 
 </main>
 
 <div id="toast"><span class="t-icon"></span><span id="toastMsg"></span></div>
-
-<div class="bottom-bar">
-  <span class="step-counter" id="stepCounter"></span>
-  <button class="btn btn-ghost" id="prevBtn" onclick="prevStep()" style="display:none">← Atrás</button>
-  <button class="btn btn-ghost" id="clearBtn" onclick="clearData()" style="display:none">🗑 Limpiar</button>
-  <button class="btn btn-accent" id="nextBtn" onclick="nextStep()">Continuar →</button>
-</div>
 
 <script>
 // ── STATE ──────────────────────────────────────────────────────────
@@ -536,19 +556,24 @@ function renderDots() {
     c.appendChild(d);
   }
   const labels=['Total','Ítems','Personas','Consumo','Propina','Resumen'];
-  document.getElementById('stepCounter').textContent = labels[currentStep];
+  // Update counter in current step nav
+  for(let i=0;i<TOTAL_STEPS;i++){
+    const el = document.getElementById('stepCounter-'+i);
+    if(el) el.textContent = labels[i];
+  }
 }
 
 function showStep(n) {
   document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('step-'+n).classList.add('active');
-  document.getElementById('prevBtn').style.display  = n > 0 ? 'inline-flex' : 'none';
-  document.getElementById('clearBtn').style.display = n === 0 ? 'inline-flex' : 'none';
-  document.getElementById('nextBtn').style.display  = n === TOTAL_STEPS-1 ? 'none' : 'inline-flex';
+  // Hide back button on step 5 if finalized
+  const nav5 = document.getElementById('stepNav-5');
+  if(nav5) nav5.style.display = state.finalized ? 'none' : 'flex';
   renderDots();
   if(n===3) renderAssignments();
   if(n===4) renderTipCalc();
   if(n===5) renderSummary();
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function nextStep() {
@@ -995,6 +1020,8 @@ function renderSummary() {
 function finalize() {
   state.finalized=true; saveState();
   document.getElementById('finalizeSection').style.display='none';
+  const nav5 = document.getElementById('stepNav-5');
+  if(nav5) nav5.style.display='none';
   const done=document.getElementById('doneScreen');
   done.style.display='block';
   setTimeout(()=>done.scrollIntoView({behavior:'smooth',block:'start'}),50);
