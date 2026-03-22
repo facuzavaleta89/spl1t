@@ -162,13 +162,13 @@
       background:var(--accent-dim);border:1px solid rgba(170,255,0,.18);color:var(--accent);cursor:pointer;transition:all .18s;
     }
     .assign-quick:hover { background:rgba(170,255,0,.18); }
-    .assign-row { display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border); }
+    .assign-row { display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);gap:12px; }
     .assign-row:last-of-type { border-bottom:none; }
-    .assign-person-name { font-size:.88rem;font-weight:600; }
-    .assign-right { display:flex;align-items:center;gap:8px; }
+    .assign-person-name { font-size:.88rem;font-weight:600;flex:1;min-width:0; }
+    .assign-right { display:flex;align-items:center;gap:8px;flex-shrink:0; }
     .assign-input {
-      width:68px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;
-      padding:6px 9px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.88rem;
+      width:44px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;
+      padding:6px 4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.88rem;
       outline:none;text-align:center;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;
     }
     .assign-input::-webkit-outer-spin-button,.assign-input::-webkit-inner-spin-button{-webkit-appearance:none;}
@@ -177,16 +177,36 @@
     .assign-share.has-val { color:var(--accent); }
     .assign-warning { font-size:.73rem;color:var(--red);margin-top:7px;font-family:'JetBrains Mono',monospace; }
 
-    /* +/- buttons */
-    .qty-control { display:flex;align-items:center;gap:5px; }
+    /* +/- buttons — tamaño base */
+    .qty-control { display:flex;align-items:center;gap:4px; }
     .qty-btn {
-      width:32px;height:32px;border-radius:8px;border:1px solid var(--border);
-      background:var(--surface);color:var(--text);font-size:1.1rem;line-height:1;
+      width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+      background:var(--surface);color:var(--text);font-size:1rem;line-height:1;
       cursor:pointer;display:flex;align-items:center;justify-content:center;
       transition:all .15s;flex-shrink:0;font-weight:600;
     }
     .qty-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-dim); }
-    .qty-btn:active { transform:scale(.92); }
+    .qty-btn:active { transform:scale(.9); }
+
+    /* +/- en formulario de ítems — un poco más grandes */
+    .item-qty-control { display:flex;align-items:center;gap:5px; }
+    .item-qty-input {
+      width:48px;text-align:center;
+      background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;
+      padding:11px 4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
+      outline:none;transition:border-color .2s,box-shadow .2s,background .2s;
+      -moz-appearance:textfield;
+    }
+    .item-qty-input:focus { border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);background:rgba(170,255,0,.03); }
+    .item-qty-input::-webkit-outer-spin-button,.item-qty-input::-webkit-inner-spin-button{-webkit-appearance:none;}
+    .item-qty-btn {
+      width:36px;height:44px;border-radius:10px;border:1px solid var(--border);
+      background:var(--surface);color:var(--text);font-size:1.15rem;line-height:1;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      transition:all .15s;flex-shrink:0;font-weight:600;
+    }
+    .item-qty-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-dim); }
+    .item-qty-btn:active { transform:scale(.92); }
 
     .seg-toggle { display:flex;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px;margin-bottom:14px; }
     .seg-btn { flex:1;padding:9px;border-radius:8px;border:none;background:transparent;color:var(--text-muted);font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s; }
@@ -395,7 +415,11 @@
         </div>
         <div class="input-group">
           <label>Cantidad</label>
-          <input type="number" id="itemQty" placeholder="Cant." min="1" step="1">
+          <div class="item-qty-control">
+            <button class="item-qty-btn" onclick="stepItemQty(-1)">−</button>
+            <input type="number" id="itemQty" placeholder="1" min="1" step="1" class="item-qty-input">
+            <button class="item-qty-btn" onclick="stepItemQty(1)">+</button>
+          </div>
         </div>
       </div>
       <div class="info-row" id="itemPreview" style="margin-bottom:10px;min-height:18px"></div>
@@ -654,6 +678,17 @@ function validateStep(n) {
   if(n===0){ const v=getRaw(document.getElementById('totalInput')); if(!v||v<=0){toast('Ingresá el total de la cuenta.');return false;} }
   if(n===1&&state.items.length===0){toast('Agregá al menos un ítem.');return false;}
   if(n===2&&state.people.length<2){toast('Agregá al menos 2 personas.');return false;}
+  if(n===3){
+    const unassigned = state.items.filter(item=>{
+      const asgn = state.assignments[item.id]||{};
+      return Object.values(asgn).reduce((s,v)=>s+v,0)===0;
+    });
+    if(unassigned.length>0){
+      const names = unassigned.map(i=>i.name).join(', ');
+      toast(`Sin asignar: ${names}`);
+      return false;
+    }
+  }
   return true;
 }
 
@@ -664,6 +699,15 @@ function collectStep(n) {
 
 // ── EDIT STATE ─────────────────────────────────────────────────────
 let editingItemId = null;
+
+function stepItemQty(delta) {
+  const input = document.getElementById('itemQty');
+  const cur = parseInt(input.value) || 0;
+  const next = Math.max(1, cur + delta);
+  input.value = next;
+  updateItemPreview();
+  vibrate(20);
+}
 
 // ── VIBRATION ──────────────────────────────────────────────────────
 function vibrate(ms=30) { try { navigator.vibrate && navigator.vibrate(ms); } catch(e){} }
