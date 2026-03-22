@@ -67,9 +67,10 @@
     input[type="text"], input[type="number"] {
       background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;
       padding:11px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
-      outline:none;transition:border-color .2s,box-shadow .2s,background .2s;width:100%;
+      outline:none;transition:border-color .2s,box-shadow .2s,background .2s;
       -moz-appearance:textfield;
     }
+    .input-group input[type="text"], .input-group input[type="number"] { width:100%; }
     input[type="text"]:focus, input[type="number"]:focus {
       border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);background:rgba(170,255,0,.03);
     }
@@ -167,8 +168,7 @@
     .assign-person-name { font-size:.88rem;font-weight:600;flex:1;min-width:0; }
     .assign-right { display:flex;align-items:center;gap:8px;flex-shrink:0; }
     .assign-input {
-      width:38px !important;max-width:38px !important;flex-shrink:0;
-      background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;
+      width:38px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;
       padding:11px 2px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
       outline:none;text-align:center;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;
     }
@@ -932,7 +932,7 @@ function renderAssignments() {
           <div class="assign-right">
             <div class="qty-control">
               <button class="qty-btn" onclick="stepAssign('${item.id}','${p.id}',-0.5)">−</button>
-              <input class="assign-input" type="text" inputmode="decimal"
+              <input class="assign-input" type="number" min="0" step="0.5"
                 value="${val||''}" placeholder="0"
                 oninput="onAssignInput('${item.id}','${p.id}',this.value)">
               <button class="qty-btn" onclick="stepAssign('${item.id}','${p.id}',0.5)">+</button>
