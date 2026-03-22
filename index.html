@@ -167,26 +167,26 @@
     .assign-person-name { font-size:.88rem;font-weight:600;flex:1;min-width:0; }
     .assign-right { display:flex;align-items:center;gap:8px;flex-shrink:0; }
     .assign-input {
-      width:44px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;
-      padding:6px 4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.88rem;
+      width:48px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;
+      padding:11px 4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
       outline:none;text-align:center;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;
     }
     .assign-input::-webkit-outer-spin-button,.assign-input::-webkit-inner-spin-button{-webkit-appearance:none;}
     .assign-input:focus { border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim); }
-    .assign-share { font-family:'JetBrains Mono',monospace;font-size:.75rem;min-width:60px;text-align:right;color:var(--text-dim); }
+    .assign-share { font-family:'JetBrains Mono',monospace;font-size:.75rem;min-width:56px;text-align:right;color:var(--text-dim); }
     .assign-share.has-val { color:var(--accent); }
     .assign-warning { font-size:.73rem;color:var(--red);margin-top:7px;font-family:'JetBrains Mono',monospace; }
 
-    /* +/- buttons — tamaño base */
-    .qty-control { display:flex;align-items:center;gap:4px; }
+    /* +/- buttons assign — igual que item-qty */
+    .qty-control { display:flex;align-items:center;gap:5px; }
     .qty-btn {
-      width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
-      background:var(--surface);color:var(--text);font-size:1rem;line-height:1;
+      width:36px;height:44px;border-radius:10px;border:1px solid var(--border);
+      background:var(--surface);color:var(--text);font-size:1.15rem;line-height:1;
       cursor:pointer;display:flex;align-items:center;justify-content:center;
       transition:all .15s;flex-shrink:0;font-weight:600;
     }
     .qty-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-dim); }
-    .qty-btn:active { transform:scale(.9); }
+    .qty-btn:active { transform:scale(.92); }
 
     /* +/- en formulario de ítems — un poco más grandes */
     .item-qty-control { display:flex;align-items:center;gap:5px; }
