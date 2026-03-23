@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="spl1t!">
   <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -63,12 +64,17 @@
     .input-group:last-child { margin-bottom:0; }
     label { font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted); }
 
+    /* ── Base input: NO width aqui ── */
     input[type="text"], input[type="number"] {
       background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;
       padding:11px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
-      outline:none;transition:border-color .2s,box-shadow .2s,background .2s;width:100%;
+      outline:none;transition:border-color .2s,box-shadow .2s,background .2s;
       -moz-appearance:textfield;
     }
+    /* width:100% SOLO dentro de input-group */
+    .input-group input[type="text"],
+    .input-group input[type="number"] { width:100%; }
+
     input[type="text"]:focus, input[type="number"]:focus {
       border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);background:rgba(170,255,0,.03);
     }
@@ -81,7 +87,7 @@
       display:inline-flex;align-items:center;justify-content:center;gap:7px;
       padding:11px 18px;border-radius:10px;font-family:'Syne',sans-serif;
       font-size:.88rem;font-weight:700;cursor:pointer;border:none;
-      transition:all .2s ease;white-space:nowrap;
+      transition:all .2s ease;white-space:nowrap;min-height:44px;
     }
     .btn-accent { background:var(--accent);color:#050508; }
     .btn-accent:hover { background:#c4ff2a;transform:translateY(-1px);box-shadow:0 6px 24px var(--accent-glow); }
@@ -94,51 +100,58 @@
     .chip-item {
       display:flex;align-items:center;justify-content:space-between;
       background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
-      animation:fadeUp .22s ease;
-      position:relative;overflow:hidden;
-      transition:transform .2s ease, opacity .2s ease, border-color .2s;
-      touch-action:pan-y;
-      user-select:none;
+      animation:fadeUp .22s ease;position:relative;overflow:hidden;
+      transition:transform .2s ease,opacity .2s ease,border-color .2s;
+      touch-action:pan-y;user-select:none;
     }
-    .chip-item.removing { animation: fadeOut .22s ease forwards; }
-    .chip-item.editing  { border-color: var(--accent); background: rgba(170,255,0,.04); }
-    @keyframes fadeOut { to { opacity:0; transform:translateX(30px); max-height:0; padding:0; margin:0; border-width:0; } }
+    .chip-item.removing { animation:fadeOut .22s ease forwards; }
+    .chip-item.editing  { border-color:var(--accent);background:rgba(170,255,0,.04); }
+    @keyframes fadeOut { to{opacity:0;transform:translateX(30px);max-height:0;padding:0;margin:0;border-width:0;} }
     .chip-name { font-weight:700;font-size:.92rem; }
     .chip-detail { font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--text-muted);margin-top:2px; }
     .chip-price { font-family:'JetBrains Mono',monospace;font-size:.9rem;font-weight:600;color:var(--accent);margin-right:8px; }
     .chip-right { display:flex;align-items:center;gap:6px; }
-    .edit-btn { background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.85rem;line-height:1;transition:color .2s;padding:4px 6px;border-radius:5px;min-width:32px;min-height:32px;display:inline-flex;align-items:center;justify-content:center; }
+    .edit-btn { background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.85rem;transition:color .2s;padding:4px 6px;border-radius:5px;min-width:36px;min-height:36px;display:inline-flex;align-items:center;justify-content:center; }
     .edit-btn:hover { color:var(--accent);background:var(--accent-dim); }
-    .remove-btn { background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.15rem;line-height:1;transition:color .2s;padding:2px 5px;border-radius:5px; }
+    .remove-btn { background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.15rem;transition:color .2s;padding:2px 5px;border-radius:5px;min-width:36px;min-height:36px;display:inline-flex;align-items:center;justify-content:center; }
     .remove-btn:hover { color:var(--red);background:var(--red-dim); }
 
-    /* Swipe delete hint */
-    .swipe-delete {
-      position:absolute;right:0;top:0;bottom:0;
-      background:var(--red);color:#fff;
-      display:flex;align-items:center;padding:0 18px;
-      font-size:.8rem;font-weight:700;
-      transform:translateX(100%);transition:transform .18s ease;
-      border-radius:0 12px 12px 0;
-      pointer-events:none;
+    /* ── +/- control (compartido entre secciones) ── */
+    .qty-control { display:flex;align-items:center;gap:5px;flex-shrink:0; }
+    .qty-btn {
+      width:36px;height:44px;border-radius:10px;border:1px solid var(--border);
+      background:var(--surface);color:var(--text);font-size:1.15rem;line-height:1;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      transition:all .15s;flex-shrink:0;font-weight:600;
     }
+    .qty-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-dim); }
+    .qty-btn:active { transform:scale(.92); }
+    /* input dentro de qty-control: tamaño fijo, no hereda width:100% */
+    .qty-control input {
+      flex:0 0 48px;width:48px;text-align:center;
+      background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;
+      padding:11px 4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
+      outline:none;transition:border-color .2s,box-shadow .2s,background .2s;-moz-appearance:textfield;
+    }
+    .qty-control input:focus { border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);background:rgba(170,255,0,.03); }
+    .qty-control input::-webkit-outer-spin-button,.qty-control input::-webkit-inner-spin-button{-webkit-appearance:none;}
 
+    /* Edit form */
+    .card.editing-mode { border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim); }
+    .edit-mode-label { font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);margin-bottom:10px;display:block; }
+
+    .person-chips { display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px; }
     .person-chip {
       display:flex;align-items:center;gap:5px;background:var(--surface);
       border:1px solid var(--border);border-radius:99px;padding:6px 10px 6px 13px;
       font-size:.86rem;font-weight:600;animation:fadeUp .22s ease;
-      position:relative;overflow:hidden;touch-action:pan-y;user-select:none;
-      transition:opacity .2s, transform .2s;
+      position:relative;overflow:hidden;touch-action:pan-y;user-select:none;transition:opacity .2s,transform .2s;
     }
-    .person-chip.removing { animation: fadeOut .22s ease forwards; }
-    .person-chip button { background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:.9rem;line-height:1;transition:color .2s;padding:1px 3px;min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center; }
+    .person-chip.removing { animation:fadeOut .22s ease forwards; }
+    .person-chip button { background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:.9rem;transition:color .2s;padding:1px 3px;min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center; }
     .person-chip button:hover { color:var(--red); }
 
-    /* Edit form active state */
-    .card.editing-mode { border-color:var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
-    .edit-mode-label { font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);margin-bottom:10px;display:block; }
-
-    /* Assign total bar */
+    /* ── Assign ── */
     .assign-total-bar {
       margin-top:16px;padding:12px 16px;
       background:rgba(170,255,0,.05);border:1px solid rgba(170,255,0,.15);
@@ -146,9 +159,6 @@
       color:var(--text-muted);display:flex;justify-content:space-between;align-items:center;
     }
     .assign-total-bar .val { color:var(--accent);font-weight:600; }
-
-    .person-chips { display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px; }
-
     .assign-card { background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden; }
     .assign-header { padding:13px 17px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02); }
     .assign-item-name { font-weight:700;font-size:.96rem; }
@@ -161,43 +171,32 @@
       background:var(--accent-dim);border:1px solid rgba(170,255,0,.18);color:var(--accent);cursor:pointer;transition:all .18s;
     }
     .assign-quick:hover { background:rgba(170,255,0,.18); }
-    .assign-row { display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border); }
+    /* assign-row: nombre | [- input +] | precio */
+    .assign-row { display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);gap:12px; }
     .assign-row:last-of-type { border-bottom:none; }
-    .assign-person-name { font-size:.88rem;font-weight:600; }
-    .assign-right { display:flex;align-items:center;gap:8px; }
-    .assign-input {
-      width:68px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;
-      padding:6px 9px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.88rem;
-      outline:none;text-align:center;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;
-    }
-    .assign-input::-webkit-outer-spin-button,.assign-input::-webkit-inner-spin-button{-webkit-appearance:none;}
-    .assign-input:focus { border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim); }
-    .assign-share { font-family:'JetBrains Mono',monospace;font-size:.75rem;min-width:60px;text-align:right;color:var(--text-dim); }
+    .assign-person-name { font-size:.88rem;font-weight:600;flex:1;min-width:0; }
+    .assign-share { font-family:'JetBrains Mono',monospace;font-size:.75rem;min-width:60px;text-align:right;color:var(--text-dim);flex-shrink:0; }
     .assign-share.has-val { color:var(--accent); }
     .assign-warning { font-size:.73rem;color:var(--red);margin-top:7px;font-family:'JetBrains Mono',monospace; }
 
     .seg-toggle { display:flex;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px;margin-bottom:14px; }
-    .seg-btn { flex:1;padding:9px;border-radius:8px;border:none;background:transparent;color:var(--text-muted);font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s; }
+    .seg-btn { flex:1;padding:9px;border-radius:8px;border:none;background:transparent;color:var(--text-muted);font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s;min-height:40px; }
     .seg-btn.active { background:var(--accent);color:#050508; }
 
     .info-row { font-family:'JetBrains Mono',monospace;font-size:.77rem;color:var(--text-muted);margin-top:5px; }
     .info-row .val { color:var(--accent); }
 
-    .ticket {
-      border:1px solid var(--border);border-radius:20px;overflow:hidden;
-      backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-      background:rgba(255,255,255,.025);
-    }
+    .ticket { border:1px solid var(--border);border-radius:20px;overflow:hidden;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);background:rgba(255,255,255,.025); }
     .ticket-head { background:var(--accent);padding:22px 22px 18px;color:#04040a; }
     .ticket-label { font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.5; }
     .ticket-grand { font-size:2.6rem;font-weight:800;line-height:1;margin-top:4px;letter-spacing:-.03em; }
     .ticket-desc { font-family:'JetBrains Mono',monospace;font-size:.75rem;opacity:.45;margin-top:5px; }
     .ticket-divider { border:none;border-top:1px dashed rgba(255,255,255,.1);margin:0 22px; }
     .ticket-body { padding:16px 22px 8px; }
-    .ticket-person { display:flex;justify-content:space-between;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--border); }
+    .ticket-person { display:flex;justify-content:space-between;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--border);gap:10px; }
     .ticket-person:last-child { border-bottom:none; }
     .ticket-person-name { font-weight:700;font-size:.98rem; }
-    .ticket-person-detail { font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted);margin-top:4px;max-width:230px;line-height:1.5; }
+    .ticket-person-detail { font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted);margin-top:4px;line-height:1.5; }
     .ticket-amount { text-align:right;flex-shrink:0;margin-left:12px; }
     .ticket-amount .main { font-family:'JetBrains Mono',monospace;font-size:1.18rem;font-weight:600;color:var(--accent); }
     .ticket-amount .tip-note { font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--text-muted);margin-top:2px; }
@@ -206,46 +205,25 @@
     .verify-bar.ok  { background:rgba(170,255,0,.08);border:1px solid rgba(170,255,0,.2);color:var(--accent); }
     .verify-bar.warn { background:rgba(255,200,0,.08);border:1px solid rgba(255,200,0,.22);color:var(--yellow); }
 
-    /* Done screen */
     .done-divider { border:none;border-top:1px dashed var(--border);margin:32px 0; }
     .done-screen { text-align:center;padding:8px 0 32px;animation:fadeUp .5s cubic-bezier(.4,0,.2,1) forwards; }
-    .done-check {
-      width:72px;height:72px;border-radius:50%;background:var(--accent);
-      display:flex;align-items:center;justify-content:center;margin:0 auto 18px;
-      font-size:2rem;color:#04040a;
-      animation:popIn .5s cubic-bezier(.34,1.56,.64,1) forwards;
-    }
+    .done-check { width:72px;height:72px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:2rem;color:#04040a;animation:popIn .5s cubic-bezier(.34,1.56,.64,1) forwards; }
     @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
     .done-title { font-size:1.65rem;font-weight:800;letter-spacing:-.02em;margin-bottom:8px; }
     .done-sub { font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text-muted);margin-bottom:26px;line-height:1.7; }
 
-    /* ─── STEP NAV (mobile: en flujo) ─── */
-    .step-nav {
-      display:flex;gap:9px;justify-content:flex-end;align-items:center;
-      margin-top:56px;
-      padding-bottom: calc(24px + env(safe-area-inset-bottom));
-    }
+    /* ── STEP NAV (mobile: en flujo) ── */
+    .step-nav { display:flex;gap:9px;justify-content:flex-end;align-items:center;margin-top:56px;padding-bottom:calc(24px + env(safe-area-inset-bottom)); }
     .step-counter { font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-muted);margin-right:auto; }
 
-    /* ─── BOTTOM BAR (desktop: fija con glassmorphism) ─── */
+    /* ── BOTTOM BAR (desktop: fija) ── */
     .bottom-bar {
-      display:none;
-      position:fixed;bottom:0;left:0;right:0;padding:10px 24px;
+      display:none;position:fixed;bottom:0;left:0;right:0;padding:10px 24px;
       background:rgba(7,7,15,.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-      border-top:1px solid var(--border);gap:9px;justify-content:flex-end;
-      z-index:100;align-items:center;
+      border-top:1px solid var(--border);gap:9px;justify-content:flex-end;z-index:100;align-items:center;
     }
 
-    .reset-link {
-      background:none;border:none;color:var(--text-muted);font-size:.76rem;
-      font-family:'JetBrains Mono',monospace;cursor:pointer;text-decoration:underline;
-      text-underline-offset:3px;transition:color .2s;
-    }
-    .reset-link:hover { color:var(--red); }
-
-    .mt-10{margin-top:10px} .mt-16{margin-top:16px} .mt-24{margin-top:24px} .center{text-align:center}
-
-    /* ─── TOAST ─── */
+    /* ── TOAST ── */
     #toast {
       position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-12px);
       background:rgba(20,20,32,0.95);border:1px solid var(--border-strong);
@@ -253,28 +231,15 @@
       color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.82rem;
       padding:11px 18px;border-radius:12px;z-index:999;
       opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;
-      white-space:nowrap;max-width:90vw;text-align:center;
-      display:flex;align-items:center;gap:8px;
+      white-space:nowrap;max-width:90vw;text-align:center;display:flex;align-items:center;gap:8px;
     }
     #toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
     #toast.error { border-color:rgba(255,77,109,.4);color:var(--red); }
     #toast .t-icon { font-size:1rem;flex-shrink:0; }
 
-    /* ─── RESPONSIVE ─── */
+    .mt-10{margin-top:10px} .mt-16{margin-top:16px} .mt-24{margin-top:24px} .center{text-align:center}
 
-    /* Safe area — ya manejada en .step-nav */
-
-    /* Touch targets mínimos 44px */
-    .btn { min-height: 44px; }
-    .remove-btn { min-width: 36px; min-height: 36px; display:inline-flex; align-items:center; justify-content:center; }
-    .assign-input { min-height: 44px; }
-    .seg-btn { min-height: 40px; }
-
-    /* Ticket: quitar max-width fijo para que no se pise con el monto */
-    .ticket-person-detail { max-width: none; }
-    .ticket-person { gap: 10px; }
-
-    /* ─── iPhone SE y pantallas pequeñas ≤ 390px ─── */
+    /* ── iPhone SE ≤ 390px ── */
     @media (max-width: 390px) {
       header { padding: 12px 14px; }
       .logo { font-size: 1.3rem; }
@@ -293,27 +258,36 @@
       .assign-header { padding: 11px 13px; }
       .assign-body { padding: 10px 13px; }
       .assign-share { min-width: 48px; font-size: .7rem; }
-      .assign-input { width: 58px; }
       .step-counter { font-size: .68rem; }
       .btn { font-size: .82rem; padding: 10px 14px; }
       .done-title { font-size: 1.4rem; }
       .done-check { width: 60px; height: 60px; font-size: 1.7rem; }
     }
 
-    /* ─── Desktop ≥ 768px: bottom bar fija, UI más grande ─── */
+    /* ── Desktop ≥ 768px ── */
     @media (min-width: 768px) {
-      main { padding-left: 24px; padding-right: 24px; padding-bottom: 90px; }
-      .step-title { font-size: 2.4rem; }
-      .step-sub { font-size: .92rem; margin-bottom: 32px; }
-      .ticket-grand { font-size: 3rem; }
-      .card { padding: 24px; }
-      input[type="text"], input[type="number"] { font-size: 1.05rem; padding: 13px 16px; }
-      .chip-name { font-size: 1rem; }
+      main { max-width: 720px; padding-left: 32px; padding-right: 32px; padding-bottom: 90px; }
+      .step-title { font-size: 2.6rem; }
+      .step-sub { font-size: .95rem; margin-bottom: 32px; }
+      .ticket-grand { font-size: 3.2rem; }
+      .card { padding: 28px; }
+      label { font-size: .75rem; }
+      .input-group input[type="text"], .input-group input[type="number"] { font-size: 1.05rem; padding: 13px 16px; }
+      .chip-item { padding: 14px 18px; border-radius: 14px; }
+      .chip-name { font-size: 1.02rem; }
       .chip-detail { font-size: .82rem; }
-      .assign-item-name { font-size: 1.05rem; }
+      .chip-price { font-size: 1rem; }
+      .assign-card { border-radius: 18px; }
+      .assign-item-name { font-size: 1.08rem; }
+      .assign-item-meta { font-size: .78rem; }
+      .assign-body { padding: 16px 20px; }
+      .assign-header { padding: 15px 20px; }
+      .assign-person-name { font-size: .95rem; }
+      .assign-share { font-size: .82rem; min-width: 70px; }
       .btn { font-size: .95rem; padding: 13px 22px; }
-
-      /* Ocultar step-nav, mostrar bottom-bar */
+      .person-chip { font-size: .95rem; padding: 8px 12px 8px 16px; }
+      .seg-btn { font-size: .92rem; }
+      .info-row { font-size: .85rem; }
       .step-nav { display: none; }
       .bottom-bar { display: flex; }
     }
@@ -348,7 +322,7 @@
     <p class="info-row">Este valor se usa al final para verificar que los números coincidan.</p>
     <div class="step-nav">
       <span class="step-counter" id="stepCounter-0"></span>
-      <button class="btn btn-ghost" id="clearBtn" onclick="clearData()">🗑 Limpiar</button>
+      <button class="btn btn-ghost" onclick="clearData()">🗑 Limpiar</button>
       <button class="btn btn-accent" onclick="nextStep()">Continuar →</button>
     </div>
   </div>
@@ -358,7 +332,7 @@
     <div class="step-title">¿Qué pidieron?</div>
     <p class="step-sub">Agregá los ítems de la cuenta</p>
     <div id="itemsList" class="chips-list"></div>
-    <div class="card">
+    <div class="card" id="itemFormCard">
       <div class="input-group">
         <label>Nombre</label>
         <input type="text" id="itemName" placeholder="Nombre del ítem">
@@ -370,7 +344,11 @@
         </div>
         <div class="input-group">
           <label>Cantidad</label>
-          <input type="number" id="itemQty" placeholder="Cant." min="1" step="1">
+          <div class="qty-control">
+            <button class="qty-btn" onclick="stepItemQty(-1)">−</button>
+            <input type="number" id="itemQty" placeholder="1" min="1" step="1">
+            <button class="qty-btn" onclick="stepItemQty(1)">+</button>
+          </div>
         </div>
       </div>
       <div class="info-row" id="itemPreview" style="margin-bottom:10px;min-height:18px"></div>
@@ -396,8 +374,7 @@
     <div class="card">
       <div class="input-group">
         <label>Nombre</label>
-        <input type="text" id="personName" placeholder="Nombre"
-          onkeydown="if(event.key==='Enter')addPerson()">
+        <input type="text" id="personName" placeholder="Nombre" onkeydown="if(event.key==='Enter')addPerson()">
       </div>
       <button class="btn btn-ghost btn-full" onclick="addPerson()">+ Agregar persona</button>
     </div>
@@ -477,7 +454,6 @@
 
 <div id="toast"><span class="t-icon"></span><span id="toastMsg"></span></div>
 
-<!-- Bottom bar: solo visible en desktop vía CSS -->
 <div class="bottom-bar">
   <span class="step-counter" id="stepCounter-desktop"></span>
   <button class="btn btn-ghost" id="prevBtnDesktop" onclick="prevStep()" style="display:none">← Atrás</button>
@@ -515,46 +491,36 @@ function saveState() {
 function fmt(n){ return '$' + Math.round(n).toLocaleString('es-CL'); }
 
 function applyNumberFormat(input) {
-  // On blur: show formatted
   input.addEventListener('blur', () => {
     const v = parseFloat(input.value);
     if (!isNaN(v) && v > 0 && input.type === 'number') {
-      input._raw = v;
-      input.type = 'text';
+      input._raw = v; input.type = 'text';
       input.value = v.toLocaleString('es-CL');
     }
   });
-  // On focus: restore raw
   input.addEventListener('focus', () => {
     if (input.type === 'text' && input._raw !== undefined) {
-      input.type = 'number';
-      input.value = input._raw;
+      input.type = 'number'; input.value = input._raw;
     }
   });
 }
-
 function getRaw(input) {
   if (input._raw !== undefined && input.type === 'text') return input._raw;
   return parseFloat(input.value) || 0;
 }
-
 function resetInput(input) {
-  input.type = 'number';
-  input.value = '';
-  input._raw = undefined;
+  input.type = 'number'; input.value = ''; input._raw = undefined;
 }
 
 // ── TOAST ──────────────────────────────────────────────────────────
 let _toastTimer;
 function toast(msg, type='error') {
-  const el  = document.getElementById('toast');
-  const ico = el.querySelector('.t-icon');
-  const txt = document.getElementById('toastMsg');
+  const el = document.getElementById('toast');
+  el.querySelector('.t-icon').textContent = type==='error'?'⚠':'✓';
+  document.getElementById('toastMsg').textContent = msg;
   el.className = 'show ' + type;
-  ico.textContent = type === 'error' ? '⚠' : '✓';
-  txt.textContent = msg;
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => { el.className = type; }, 3000);
+  _toastTimer = setTimeout(()=>{ el.className=type; }, 3000);
 }
 
 // ── CLEAR DATA ─────────────────────────────────────────────────────
@@ -571,7 +537,7 @@ function clearData() {
   document.getElementById('tipDisplay').innerHTML='';
   setTipMode('pct'); setTipSplit('equal');
   renderItems(); renderPeople();
-  toast('Datos eliminados', 'ok');
+  toast('Datos eliminados','ok');
 }
 
 // ── NAVIGATION ─────────────────────────────────────────────────────
@@ -588,7 +554,6 @@ function renderDots() {
     const el = document.getElementById('stepCounter-'+i);
     if(el) el.textContent = labels[i];
   }
-  // Desktop bottom bar counter
   const dc = document.getElementById('stepCounter-desktop');
   if(dc) dc.textContent = labels[currentStep];
 }
@@ -596,24 +561,19 @@ function renderDots() {
 function showStep(n) {
   document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('step-'+n).classList.add('active');
-
-  // Desktop bottom bar buttons
-  const prevD  = document.getElementById('prevBtnDesktop');
-  const clearD = document.getElementById('clearBtnDesktop');
-  const nextD  = document.getElementById('nextBtnDesktop');
-  if(prevD)  prevD.style.display  = n > 0 && n < TOTAL_STEPS-1 ? 'inline-flex' : 'none';
-  if(clearD) clearD.style.display = n === 0 ? 'inline-flex' : 'none';
-  if(nextD)  nextD.style.display  = n < TOTAL_STEPS-1 ? 'inline-flex' : 'none';
-
-  // Step 5 nav (mobile back btn)
-  const nav5 = document.getElementById('stepNav-5');
-  if(nav5) nav5.style.display = state.finalized ? 'none' : 'flex';
-
+  const prevD=document.getElementById('prevBtnDesktop');
+  const clearD=document.getElementById('clearBtnDesktop');
+  const nextD=document.getElementById('nextBtnDesktop');
+  if(prevD)  prevD.style.display  = n>0 && n<TOTAL_STEPS-1 ? 'inline-flex':'none';
+  if(clearD) clearD.style.display = n===0 ? 'inline-flex':'none';
+  if(nextD)  nextD.style.display  = n<TOTAL_STEPS-1 ? 'inline-flex':'none';
+  const nav5=document.getElementById('stepNav-5');
+  if(nav5) nav5.style.display = state.finalized?'none':'flex';
   renderDots();
   if(n===3) renderAssignments();
   if(n===4) renderTipCalc();
   if(n===5) renderSummary();
-  window.scrollTo({top:0, behavior:'smooth'});
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function nextStep() {
@@ -629,6 +589,13 @@ function validateStep(n) {
   if(n===0){ const v=getRaw(document.getElementById('totalInput')); if(!v||v<=0){toast('Ingresá el total de la cuenta.');return false;} }
   if(n===1&&state.items.length===0){toast('Agregá al menos un ítem.');return false;}
   if(n===2&&state.people.length<2){toast('Agregá al menos 2 personas.');return false;}
+  if(n===3){
+    const unassigned=state.items.filter(item=>{
+      const asgn=state.assignments[item.id]||{};
+      return Object.values(asgn).reduce((s,v)=>s+v,0)===0;
+    });
+    if(unassigned.length>0){ toast('Sin asignar: '+unassigned.map(i=>i.name).join(', ')); return false; }
+  }
   return true;
 }
 
@@ -637,113 +604,98 @@ function collectStep(n) {
   if(n===4){ state.tip.value=parseFloat(document.getElementById('tipInput').value)||0; }
 }
 
+// ── VIBRATION ──────────────────────────────────────────────────────
+function vibrate(ms=30){ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} }
+
 // ── EDIT STATE ─────────────────────────────────────────────────────
 let editingItemId = null;
 
-// ── VIBRATION ──────────────────────────────────────────────────────
-function vibrate(ms=30) { try { navigator.vibrate && navigator.vibrate(ms); } catch(e){} }
+function stepItemQty(delta) {
+  const input = document.getElementById('itemQty');
+  const cur = parseInt(input.value)||0;
+  input.value = Math.max(1, cur+delta);
+  updateItemPreview();
+  vibrate(20);
+}
 
 // ── ITEMS ──────────────────────────────────────────────────────────
 function addItem() {
   const name  = document.getElementById('itemName').value.trim();
   const price = getRaw(document.getElementById('itemPrice'));
-  const qty   = parseInt(document.getElementById('itemQty').value) || 1;
+  const qty   = parseInt(document.getElementById('itemQty').value)||1;
   if(!name){toast('Ingresá el nombre del ítem.');return;}
   if(!price||price<=0){toast('Ingresá un precio válido.');return;}
-
   vibrate();
-
   if(editingItemId) {
-    const item = state.items.find(i=>i.id===editingItemId);
+    const item=state.items.find(i=>i.id===editingItemId);
     if(item){ item.name=name; item.unitPrice=price; item.qty=qty; }
-    cancelEdit();
-    renderItems();
-    saveState();
-    toast('Ítem actualizado', 'ok');
-    return;
+    cancelEdit(); renderItems(); saveState();
+    toast('Ítem actualizado','ok'); return;
   }
-
-  const item = {id:uid(), name, unitPrice:price, qty};
+  const item={id:uid(),name,unitPrice:price,qty};
   state.items.push(item);
-  state.assignments[item.id] = {};
-  state.people.forEach(p => { state.assignments[item.id][p.id] = 0; });
-
-  document.getElementById('itemName').value = '';
+  state.assignments[item.id]={};
+  state.people.forEach(p=>{ state.assignments[item.id][p.id]=0; });
+  document.getElementById('itemName').value='';
   resetInput(document.getElementById('itemPrice'));
-  document.getElementById('itemQty').value = '';
-  document.getElementById('itemPreview').innerHTML = '';
-  renderItems();
-  saveState();
+  document.getElementById('itemQty').value='';
+  document.getElementById('itemPreview').innerHTML='';
+  renderItems(); saveState();
   setTimeout(()=>{
-    const chips = document.querySelectorAll('#itemsList .chip-item');
+    const chips=document.querySelectorAll('#itemsList .chip-item');
     if(chips.length) chips[chips.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});
-  }, 80);
+  },80);
   document.getElementById('itemName').focus();
 }
 
 function startEditItem(id) {
-  const item = state.items.find(i=>i.id===id);
+  const item=state.items.find(i=>i.id===id);
   if(!item) return;
-  editingItemId = id;
-  document.getElementById('itemName').value = item.name;
-  const priceInput = document.getElementById('itemPrice');
-  resetInput(priceInput);
-  priceInput.value = item.unitPrice;
-  document.getElementById('itemQty').value = item.qty;
+  editingItemId=id;
+  document.getElementById('itemName').value=item.name;
+  const pi=document.getElementById('itemPrice');
+  resetInput(pi); pi.value=item.unitPrice;
+  document.getElementById('itemQty').value=item.qty;
   updateItemPreview();
-  document.getElementById('addItemBtn').textContent = '💾 Guardar cambios';
-  document.getElementById('cancelEditBtn').style.display = 'inline-flex';
-  document.getElementById('editModeLabel').style.display = 'block';
-  document.querySelector('#step-1 .card').classList.add('editing-mode');
-  document.querySelectorAll('.chip-item').forEach(el=>{
-    el.classList.toggle('editing', el.dataset.id===id);
-  });
+  document.getElementById('addItemBtn').textContent='💾 Guardar cambios';
+  document.getElementById('cancelEditBtn').style.display='inline-flex';
+  document.getElementById('editModeLabel').style.display='block';
+  document.getElementById('itemFormCard').classList.add('editing-mode');
+  document.querySelectorAll('.chip-item').forEach(el=>el.classList.toggle('editing',el.dataset.id===id));
   document.getElementById('itemName').focus();
-  document.querySelector('#step-1 .card').scrollIntoView({behavior:'smooth',block:'nearest'});
+  document.getElementById('itemFormCard').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function cancelEdit() {
-  editingItemId = null;
-  document.getElementById('itemName').value = '';
+  editingItemId=null;
+  document.getElementById('itemName').value='';
   resetInput(document.getElementById('itemPrice'));
-  document.getElementById('itemQty').value = '';
-  document.getElementById('itemPreview').innerHTML = '';
-  document.getElementById('addItemBtn').textContent = '+ Agregar ítem';
-  document.getElementById('cancelEditBtn').style.display = 'none';
-  document.getElementById('editModeLabel').style.display = 'none';
-  document.querySelector('#step-1 .card').classList.remove('editing-mode');
+  document.getElementById('itemQty').value='';
+  document.getElementById('itemPreview').innerHTML='';
+  document.getElementById('addItemBtn').textContent='+ Agregar ítem';
+  document.getElementById('cancelEditBtn').style.display='none';
+  document.getElementById('editModeLabel').style.display='none';
+  document.getElementById('itemFormCard').classList.remove('editing-mode');
   document.querySelectorAll('.chip-item').forEach(el=>el.classList.remove('editing'));
 }
 
 function removeItem(id) {
-  const el = document.querySelector(`.chip-item[data-id="${id}"]`);
+  const el=document.querySelector(`.chip-item[data-id="${id}"]`);
   vibrate(20);
-  if(el) {
-    el.classList.add('removing');
-    setTimeout(()=>{
-      state.items = state.items.filter(i=>i.id!==id);
-      delete state.assignments[id];
-      if(editingItemId===id) cancelEdit();
-      renderItems(); saveState();
-    }, 210);
-  } else {
-    state.items = state.items.filter(i=>i.id!==id);
-    delete state.assignments[id];
-    renderItems(); saveState();
-  }
+  if(el){ el.classList.add('removing'); setTimeout(()=>{ state.items=state.items.filter(i=>i.id!==id); delete state.assignments[id]; if(editingItemId===id) cancelEdit(); renderItems(); saveState(); },210); }
+  else { state.items=state.items.filter(i=>i.id!==id); delete state.assignments[id]; renderItems(); saveState(); }
 }
 
 function updateItemPreview() {
-  const p = getRaw(document.getElementById('itemPrice'));
-  const q = parseInt(document.getElementById('itemQty').value) || 1;
-  const el = document.getElementById('itemPreview');
-  el.innerHTML = p>0 ? `Subtotal: <span class="val">${fmt(p*q)}</span>` : '';
+  const p=getRaw(document.getElementById('itemPrice'));
+  const q=parseInt(document.getElementById('itemQty').value)||1;
+  document.getElementById('itemPreview').innerHTML=p>0?`Subtotal: <span class="val">${fmt(p*q)}</span>`:'';
 }
 
 function renderItems() {
-  const el = document.getElementById('itemsList');
+  const el=document.getElementById('itemsList');
   if(!state.items.length){ el.innerHTML=''; document.getElementById('itemsTotalDisplay').textContent='$0'; return; }
-  el.innerHTML = state.items.map(item=>`
+  el.innerHTML=state.items.map(item=>`
     <div class="chip-item" data-id="${item.id}">
       <div style="flex:1;min-width:0">
         <div class="chip-name">${esc(item.name)}</div>
@@ -756,52 +708,34 @@ function renderItems() {
       </div>
     </div>
   `).join('');
-  document.getElementById('itemsTotalDisplay').textContent = fmt(state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0));
+  document.getElementById('itemsTotalDisplay').textContent=fmt(state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0));
   initSwipe();
 }
 
 // ── PEOPLE ─────────────────────────────────────────────────────────
 function addPerson() {
-  const name = document.getElementById('personName').value.trim();
+  const name=document.getElementById('personName').value.trim();
   if(!name){toast('Ingresá un nombre.');return;}
   if(state.people.find(p=>p.name.toLowerCase()===name.toLowerCase())){toast('Ya existe esa persona.');return;}
-
   vibrate();
-  const person = {id:uid(), name};
+  const person={id:uid(),name};
   state.people.push(person);
-  state.items.forEach(item=>{
-    if(!state.assignments[item.id]) state.assignments[item.id]={};
-    state.assignments[item.id][person.id] = 0;
-  });
-
-  document.getElementById('personName').value = '';
+  state.items.forEach(item=>{ if(!state.assignments[item.id]) state.assignments[item.id]={}; state.assignments[item.id][person.id]=0; });
+  document.getElementById('personName').value='';
   renderPeople(); saveState();
-  setTimeout(()=>{
-    const chips = document.querySelectorAll('.person-chip');
-    if(chips.length) chips[chips.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});
-  }, 80);
+  setTimeout(()=>{ const chips=document.querySelectorAll('.person-chip'); if(chips.length) chips[chips.length-1].scrollIntoView({behavior:'smooth',block:'nearest'}); },80);
   document.getElementById('personName').focus();
 }
 
 function removePerson(id) {
-  const el = document.querySelector(`.person-chip[data-id="${id}"]`);
+  const el=document.querySelector(`.person-chip[data-id="${id}"]`);
   vibrate(20);
-  if(el) {
-    el.classList.add('removing');
-    setTimeout(()=>{
-      state.people = state.people.filter(p=>p.id!==id);
-      Object.keys(state.assignments).forEach(iid=>{ delete state.assignments[iid][id]; });
-      renderPeople(); saveState();
-    }, 210);
-  } else {
-    state.people = state.people.filter(p=>p.id!==id);
-    Object.keys(state.assignments).forEach(iid=>{ delete state.assignments[iid][id]; });
-    renderPeople(); saveState();
-  }
+  if(el){ el.classList.add('removing'); setTimeout(()=>{ state.people=state.people.filter(p=>p.id!==id); Object.keys(state.assignments).forEach(iid=>{ delete state.assignments[iid][id]; }); renderPeople(); saveState(); },210); }
+  else { state.people=state.people.filter(p=>p.id!==id); Object.keys(state.assignments).forEach(iid=>{ delete state.assignments[iid][id]; }); renderPeople(); saveState(); }
 }
 
 function renderPeople() {
-  document.getElementById('peopleList').innerHTML = state.people.map(p=>`
+  document.getElementById('peopleList').innerHTML=state.people.map(p=>`
     <div class="person-chip" data-id="${p.id}">
       <span>${esc(p.name)}</span>
       <button onclick="removePerson('${p.id}')">×</button>
@@ -812,59 +746,43 @@ function renderPeople() {
 // ── SWIPE TO DELETE ────────────────────────────────────────────────
 function initSwipe() {
   document.querySelectorAll('.chip-item').forEach(el=>{
-    let startX=0, startY=0, dx=0;
-    el.addEventListener('touchstart', e=>{
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      dx = 0;
-    }, {passive:true});
-    el.addEventListener('touchmove', e=>{
-      dx = e.touches[0].clientX - startX;
-      const dy = Math.abs(e.touches[0].clientY - startY);
-      if(Math.abs(dx) < dy) return; // vertical scroll, ignore
-      if(dx < 0) el.style.transform = `translateX(${Math.max(dx,-80)}px)`;
-    }, {passive:true});
-    el.addEventListener('touchend', ()=>{
-      if(dx < -60) {
-        removeItem(el.dataset.id);
-      } else {
-        el.style.transform = '';
-      }
-    });
+    let startX=0,startY=0,dx=0;
+    el.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; startY=e.touches[0].clientY; dx=0; },{passive:true});
+    el.addEventListener('touchmove',e=>{ dx=e.touches[0].clientX-startX; const dy=Math.abs(e.touches[0].clientY-startY); if(Math.abs(dx)<dy) return; if(dx<0) el.style.transform=`translateX(${Math.max(dx,-80)}px)`; },{passive:true});
+    el.addEventListener('touchend',()=>{ if(dx<-60){ removeItem(el.dataset.id); } else { el.style.transform=''; } });
   });
 }
 
-// ── SANITIZE (defensive) ───────────────────────────────────────────
+// ── SANITIZE ───────────────────────────────────────────────────────
 function sanitize() {
   state.items.forEach(item=>{
     if(!state.assignments[item.id]) state.assignments[item.id]={};
-    state.people.forEach(p=>{
-      if(state.assignments[item.id][p.id]===undefined) state.assignments[item.id][p.id]=0;
-    });
+    state.people.forEach(p=>{ if(state.assignments[item.id][p.id]===undefined) state.assignments[item.id][p.id]=0; });
   });
 }
 
 // ── ASSIGNMENTS ────────────────────────────────────────────────────
 function renderAssignments() {
   sanitize();
-  const c = document.getElementById('assignmentContainer');
+  const c=document.getElementById('assignmentContainer');
   if(!state.items.length||!state.people.length){
     c.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-muted);font-family:JetBrains Mono,monospace;font-size:.82rem">No hay ítems o personas cargadas.</div>';
     return;
   }
-  c.innerHTML = state.items.map(item=>{
-    const subtotal = item.unitPrice*item.qty;
-    const rows = state.people.map(p=>{
-      const val = state.assignments[item.id][p.id]||0;
+  c.innerHTML=state.items.map(item=>{
+    const subtotal=item.unitPrice*item.qty;
+    const rows=state.people.map(p=>{
+      const val=state.assignments[item.id][p.id]||0;
       return `
         <div class="assign-row">
           <span class="assign-person-name">${esc(p.name)}</span>
-          <div class="assign-right">
-            <input class="assign-input" type="number" min="0" step="0.5"
-              value="${val||''}" placeholder="0"
+          <div class="qty-control">
+            <button class="qty-btn" onclick="stepAssign('${item.id}','${p.id}',-0.5)">−</button>
+            <input type="number" min="0" step="0.5" value="${val||''}" placeholder="0"
               oninput="onAssignInput('${item.id}','${p.id}',this.value)">
-            <span class="assign-share" id="shr-${item.id}-${p.id}">—</span>
+            <button class="qty-btn" onclick="stepAssign('${item.id}','${p.id}',0.5)">+</button>
           </div>
+          <span class="assign-share" id="shr-${item.id}-${p.id}">—</span>
         </div>`;
     }).join('');
     return `
@@ -886,47 +804,48 @@ function renderAssignments() {
         </div>
       </div>`;
   }).join('');
-
-  // Running total bar
-  c.innerHTML += `<div class="assign-total-bar" id="assignTotalBar">
-    <span>Total asignado</span>
-    <span id="assignTotalVal" class="val">$0</span>
-  </div>`;
-
+  c.innerHTML+=`<div class="assign-total-bar"><span>Total asignado</span><span id="assignTotalVal" class="val">$0</span></div>`;
   refreshAllShares();
   refreshAssignTotal();
 }
 
-function onAssignInput(itemId, personId, val) {
+function stepAssign(itemId, personId, delta) {
   if(!state.assignments[itemId]) state.assignments[itemId]={};
-  state.assignments[itemId][personId] = parseFloat(val)||0;
-  refreshShares(itemId);
-  refreshAssignTotal();
-  saveState();
+  const cur=state.assignments[itemId][personId]||0;
+  const next=Math.max(0, Math.round((cur+delta)*10)/10);
+  state.assignments[itemId][personId]=next;
+  const inp=document.querySelector(`#assignmentContainer [oninput*="'${itemId}','${personId}'"]`);
+  if(inp) inp.value=next||'';
+  refreshShares(itemId); refreshAssignTotal(); saveState(); vibrate(20);
+}
+
+function onAssignInput(itemId,personId,val) {
+  if(!state.assignments[itemId]) state.assignments[itemId]={};
+  state.assignments[itemId][personId]=parseFloat(val)||0;
+  refreshShares(itemId); refreshAssignTotal(); saveState();
 }
 
 function refreshAssignTotal() {
-  const el = document.getElementById('assignTotalVal');
+  const el=document.getElementById('assignTotalVal');
   if(!el) return;
-  const total = calcAmounts();
-  const sum = Object.values(total).reduce((s,r)=>s+r.base,0);
-  el.textContent = fmt(sum);
+  const total=calcAmounts();
+  el.textContent=fmt(Object.values(total).reduce((s,r)=>s+r.base,0));
 }
 
 function refreshShares(itemId) {
-  const asgn  = state.assignments[itemId]||{};
-  const total = Object.values(asgn).reduce((s,v)=>s+v,0);
-  const item  = state.items.find(i=>i.id===itemId);
-  const subtotal = item.unitPrice*item.qty;
-  const warn  = document.getElementById('wrn-'+itemId);
+  const asgn=state.assignments[itemId]||{};
+  const total=Object.values(asgn).reduce((s,v)=>s+v,0);
+  const item=state.items.find(i=>i.id===itemId);
+  const subtotal=item.unitPrice*item.qty;
+  const warn=document.getElementById('wrn-'+itemId);
   state.people.forEach(p=>{
-    const el  = document.getElementById(`shr-${itemId}-${p.id}`);
+    const el=document.getElementById(`shr-${itemId}-${p.id}`);
     if(!el) return;
-    const qty = asgn[p.id]||0;
+    const qty=asgn[p.id]||0;
     if(total>0&&qty>0){ el.textContent=fmt((qty/total)*subtotal); el.className='assign-share has-val'; }
     else { el.textContent='—'; el.className='assign-share'; }
   });
-  if(warn) warn.textContent = total===0 ? '⚠ Nadie tiene asignado este ítem.' : '';
+  if(warn) warn.textContent=total===0?'⚠ Nadie tiene asignado este ítem.':'';
 }
 
 function refreshAllShares() { state.items.forEach(i=>refreshShares(i.id)); }
@@ -935,7 +854,7 @@ function splitEqual(itemId) {
   sanitize();
   state.people.forEach(p=>{
     state.assignments[itemId][p.id]=1;
-    const inp = document.querySelector(`[oninput*="'${itemId}','${p.id}'"]`);
+    const inp=document.querySelector(`#assignmentContainer [oninput*="'${itemId}','${p.id}'"]`);
     if(inp) inp.value='1';
   });
   refreshShares(itemId); saveState();
@@ -945,7 +864,7 @@ function clearAssign(itemId) {
   sanitize();
   state.people.forEach(p=>{
     state.assignments[itemId][p.id]=0;
-    const inp = document.querySelector(`[oninput*="'${itemId}','${p.id}'"]`);
+    const inp=document.querySelector(`#assignmentContainer [oninput*="'${itemId}','${p.id}'"]`);
     if(inp) inp.value='';
   });
   refreshShares(itemId); saveState();
@@ -956,8 +875,8 @@ function setTipMode(mode) {
   state.tip.mode=mode;
   document.getElementById('tipPctBtn').classList.toggle('active',mode==='pct');
   document.getElementById('tipAmtBtn').classList.toggle('active',mode==='amt');
-  document.getElementById('tipLabel').textContent = mode==='pct'?'Porcentaje':'Monto fijo';
-  document.getElementById('tipInput').placeholder  = mode==='pct'?'10':'2000';
+  document.getElementById('tipLabel').textContent=mode==='pct'?'Porcentaje':'Monto fijo';
+  document.getElementById('tipInput').placeholder=mode==='pct'?'10':'2000';
   renderTipCalc();
 }
 function setTipSplit(split) {
@@ -967,15 +886,14 @@ function setTipSplit(split) {
   renderTipCalc();
 }
 function getTipAmount() {
-  const sub = state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0);
-  return state.tip.mode==='pct' ? sub*((state.tip.value||0)/100) : (state.tip.value||0);
+  const sub=state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0);
+  return state.tip.mode==='pct'?sub*((state.tip.value||0)/100):(state.tip.value||0);
 }
 function renderTipCalc() {
-  state.tip.value = parseFloat(document.getElementById('tipInput').value)||0;
-  const sub    = state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0);
-  const tipAmt = getTipAmount();
-  document.getElementById('tipDisplay').innerHTML = tipAmt>0
-    ? `Propina: <span class="val">${fmt(tipAmt)}</span> · Total con propina: <span class="val">${fmt(sub+tipAmt)}</span>` : '';
+  state.tip.value=parseFloat(document.getElementById('tipInput').value)||0;
+  const sub=state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0);
+  const tipAmt=getTipAmount();
+  document.getElementById('tipDisplay').innerHTML=tipAmt>0?`Propina: <span class="val">${fmt(tipAmt)}</span> · Total con propina: <span class="val">${fmt(sub+tipAmt)}</span>`:'';
 }
 
 // ── CALC ───────────────────────────────────────────────────────────
@@ -984,22 +902,17 @@ function calcAmounts() {
   const res={};
   state.people.forEach(p=>{ res[p.id]={base:0,items:[],tip:0,total:0}; });
   state.items.forEach(item=>{
-    const asgn     = state.assignments[item.id]||{};
-    const totalQty = Object.values(asgn).reduce((s,v)=>s+v,0);
-    const subtotal = item.unitPrice*item.qty;
+    const asgn=state.assignments[item.id]||{};
+    const totalQty=Object.values(asgn).reduce((s,v)=>s+v,0);
+    const subtotal=item.unitPrice*item.qty;
     if(totalQty===0) return;
-    state.people.forEach(p=>{
-      const qty=asgn[p.id]||0;
-      if(qty>0){ const amt=(qty/totalQty)*subtotal; res[p.id].base+=amt; res[p.id].items.push({name:item.name,amt}); }
-    });
+    state.people.forEach(p=>{ const qty=asgn[p.id]||0; if(qty>0){ const amt=(qty/totalQty)*subtotal; res[p.id].base+=amt; res[p.id].items.push({name:item.name,amt}); } });
   });
-  const tipAmt  = getTipAmount();
-  const baseSum = Object.values(res).reduce((s,r)=>s+r.base,0);
+  const tipAmt=getTipAmount();
+  const baseSum=Object.values(res).reduce((s,r)=>s+r.base,0);
   state.people.forEach(p=>{
     let tip=0;
-    if(tipAmt>0){
-      tip = state.tip.split==='equal' ? tipAmt/state.people.length : (baseSum>0?(res[p.id].base/baseSum)*tipAmt:0);
-    }
+    if(tipAmt>0){ tip=state.tip.split==='equal'?tipAmt/state.people.length:(baseSum>0?(res[p.id].base/baseSum)*tipAmt:0); }
     res[p.id].tip=tip; res[p.id].total=res[p.id].base+tip;
   });
   return res;
@@ -1007,31 +920,19 @@ function calcAmounts() {
 
 // ── SUMMARY ────────────────────────────────────────────────────────
 function renderSummary() {
-  const amounts  = calcAmounts();
-  const subtotal = state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0);
-  const tipAmt   = getTipAmount();
-  const grand    = subtotal+tipAmt;
-  const diff     = Math.abs(grand-state.total);
-  const now      = new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'});
-
-  const personsHTML = state.people.map(p=>{
+  const amounts=calcAmounts();
+  const subtotal=state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0);
+  const tipAmt=getTipAmount();
+  const grand=subtotal+tipAmt;
+  const diff=Math.abs(grand-state.total);
+  const now=new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'});
+  const personsHTML=state.people.map(p=>{
     const d=amounts[p.id];
     const detail=d.items.map(i=>`${esc(i.name)}: ${fmt(i.amt)}`).join('\n');
-    return `
-      <div class="ticket-person">
-        <div>
-          <div class="ticket-person-name">${esc(p.name)}</div>
-          <div class="ticket-person-detail">${detail||'Sin consumo asignado'}</div>
-        </div>
-        <div class="ticket-amount">
-          <div class="main">${fmt(d.total)}</div>
-          ${d.tip>0?`<div class="tip-note">incl. propina ${fmt(d.tip)}</div>`:''}
-        </div>
-      </div>`;
+    return `<div class="ticket-person"><div><div class="ticket-person-name">${esc(p.name)}</div><div class="ticket-person-detail">${detail||'Sin consumo asignado'}</div></div><div class="ticket-amount"><div class="main">${fmt(d.total)}</div>${d.tip>0?`<div class="tip-note">incl. propina ${fmt(d.tip)}</div>`:''}</div></div>`;
   }).join('');
-
-  const verifyOk = diff<2;
-  document.getElementById('summaryContainer').innerHTML = `
+  const verifyOk=diff<2;
+  document.getElementById('summaryContainer').innerHTML=`
     <div class="ticket">
       <div class="ticket-head">
         <div class="ticket-label">spl1t! · resumen</div>
@@ -1044,60 +945,44 @@ function renderSummary() {
       <div class="ticket-footer">
         <div class="verify-bar ${verifyOk?'ok':'warn'}">
           <span>${verifyOk?'✓':'⚠'}</span>
-          <span>${verifyOk
-            ?`El total calculado coincide con el ingresado (${fmt(grand)})`
-            :`Diferencia de ${fmt(diff)} — Ingresado: ${fmt(state.total)} · Calculado: ${fmt(grand)}`
-          }</span>
+          <span>${verifyOk?`El total calculado coincide con el ingresado (${fmt(grand)})`:`Diferencia de ${fmt(diff)} — Ingresado: ${fmt(state.total)} · Calculado: ${fmt(grand)}`}</span>
         </div>
       </div>
     </div>`;
-
-  document.getElementById('finalizeSection').style.display = state.finalized?'none':'block';
-  document.getElementById('doneScreen').style.display = state.finalized?'block':'none';
+  document.getElementById('finalizeSection').style.display=state.finalized?'none':'block';
+  document.getElementById('doneScreen').style.display=state.finalized?'block':'none';
 }
 
 // ── FINALIZE ───────────────────────────────────────────────────────
 function finalize() {
   state.finalized=true; saveState();
   document.getElementById('finalizeSection').style.display='none';
-  const nav5 = document.getElementById('stepNav-5');
-  if(nav5) nav5.style.display='none';
-  const nextD = document.getElementById('nextBtnDesktop');
-  if(nextD) nextD.style.display='none';
-  const prevD = document.getElementById('prevBtnDesktop');
-  if(prevD) prevD.style.display='none';
-  const done=document.getElementById('doneScreen');
-  done.style.display='block';
+  const nav5=document.getElementById('stepNav-5'); if(nav5) nav5.style.display='none';
+  const nextD=document.getElementById('nextBtnDesktop'); if(nextD) nextD.style.display='none';
+  const prevD=document.getElementById('prevBtnDesktop'); if(prevD) prevD.style.display='none';
+  const done=document.getElementById('doneScreen'); done.style.display='block';
   setTimeout(()=>done.scrollIntoView({behavior:'smooth',block:'start'}),50);
 }
 
 // ── RESET ──────────────────────────────────────────────────────────
 function resetApp() {
-  localStorage.removeItem('spl1t_state');
-  localStorage.removeItem('spl1t_step');
+  localStorage.removeItem('spl1t_state'); localStorage.removeItem('spl1t_step');
   state={total:0,description:'',items:[],people:[],assignments:{},tip:{mode:'pct',value:0,split:'equal'},finalized:false};
   currentStep=0;
   ['descInput','itemName','personName'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
-  resetInput(document.getElementById('totalInput'));
-  resetInput(document.getElementById('itemPrice'));
-  document.getElementById('itemQty').value='';
-  document.getElementById('tipInput').value='';
-  document.getElementById('itemPreview').innerHTML='';
-  document.getElementById('tipDisplay').innerHTML='';
-  setTipMode('pct'); setTipSplit('equal');
-  renderItems(); renderPeople();
-  showStep(0);
-  window.scrollTo({top:0, behavior:'smooth'});
+  resetInput(document.getElementById('totalInput')); resetInput(document.getElementById('itemPrice'));
+  document.getElementById('itemQty').value=''; document.getElementById('tipInput').value='';
+  document.getElementById('itemPreview').innerHTML=''; document.getElementById('tipDisplay').innerHTML='';
+  setTipMode('pct'); setTipSplit('equal'); renderItems(); renderPeople();
+  showStep(0); window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ── UTILS ──────────────────────────────────────────────────────────
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── SERVICE WORKER ─────────────────────────────────────────────────
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  });
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
 
 // ── INIT ───────────────────────────────────────────────────────────
@@ -1105,20 +990,14 @@ loadState();
 if(state.total)       document.getElementById('totalInput').value=state.total;
 if(state.description) document.getElementById('descInput').value=state.description;
 if(state.tip.value)   document.getElementById('tipInput').value=state.tip.value;
-setTipMode(state.tip.mode);
-setTipSplit(state.tip.split);
-renderItems(); renderPeople();
-showStep(currentStep);
+setTipMode(state.tip.mode); setTipSplit(state.tip.split);
+renderItems(); renderPeople(); showStep(currentStep);
 
-// Apply format events
 applyNumberFormat(document.getElementById('totalInput'));
 applyNumberFormat(document.getElementById('itemPrice'));
 
-// Preview listeners
 document.getElementById('itemPrice').addEventListener('input', updateItemPreview);
 document.getElementById('itemQty').addEventListener('input', updateItemPreview);
-
-// Enter shortcuts
 document.getElementById('itemName').addEventListener('keydown',  e=>{ if(e.key==='Enter') addItem(); });
 document.getElementById('itemPrice').addEventListener('keydown', e=>{ if(e.key==='Enter') addItem(); });
 document.getElementById('itemQty').addEventListener('keydown',   e=>{ if(e.key==='Enter') addItem(); });
