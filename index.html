@@ -13,6 +13,44 @@
   <link rel="icon" type="image/png" href="icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
+    /* ── SPLASH ── */
+    #splash {
+      position:fixed;inset:0;z-index:9999;
+      background:#07070f;
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      gap:48px;
+      opacity:1;transition:opacity .5s ease;
+    }
+    #splash.hide { opacity:0;pointer-events:none; }
+    #splash img {
+      width:min(72vw, 320px);
+      animation:splashIn .6s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    @keyframes splashIn {
+      from { opacity:0;transform:scale(.85); }
+      to   { opacity:1;transform:scale(1); }
+    }
+    .splash-bar-wrap {
+      width:min(60vw, 260px);
+      height:3px;
+      background:rgba(255,255,255,.08);
+      border-radius:99px;
+      overflow:hidden;
+    }
+    .splash-bar {
+      height:100%;width:0;
+      background:#aaff00;
+      border-radius:99px;
+      box-shadow:0 0 8px rgba(170,255,0,.5);
+      animation:barFill 1.3s .3s cubic-bezier(.4,0,.2,1) forwards;
+    }
+    @keyframes barFill {
+      from { width:0; }
+      to   { width:100%; }
+    }
+  </style>
+  <style>
     :root {
       --bg: #07070f;
       --surface: rgba(255,255,255,0.04);
@@ -301,6 +339,13 @@
 </head>
 <body>
 
+<div id="splash" style="display:none">
+  <img src="logo.png" alt="spl1t!">
+  <div class="splash-bar-wrap">
+    <div class="splash-bar"></div>
+  </div>
+</div>
+
 <div class="ambient ambient-1"></div>
 <div class="ambient ambient-2"></div>
 
@@ -468,6 +513,16 @@
 </div>
 
 <script>
+// ── SPLASH ─────────────────────────────────────────────────────────
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+  const splash = document.getElementById('splash');
+  splash.style.display = 'flex';
+  setTimeout(() => {
+    splash.classList.add('hide');
+    setTimeout(() => splash.remove(), 500);
+  }, 1800);
+}
+
 // ── STATE ──────────────────────────────────────────────────────────
 let state = {
   total:0, description:'', items:[], people:[], assignments:{},
