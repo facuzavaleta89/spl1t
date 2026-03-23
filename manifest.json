@@ -2,7 +2,7 @@
   "name": "spl1t!",
   "short_name": "spl1t!",
   "description": "Dividí cuentas entre personas, sin complicaciones.",
-  "start_url": "./index.html",
+  "start_url": "/spl1t/",
   "display": "standalone",
   "background_color": "#07070f",
   "theme_color": "#07070f",
