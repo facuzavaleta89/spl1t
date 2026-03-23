@@ -102,14 +102,12 @@
     .input-group:last-child { margin-bottom:0; }
     label { font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted); }
 
-    /* ── Base input: NO width aqui ── */
     input[type="text"], input[type="number"] {
       background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;
       padding:11px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
       outline:none;transition:border-color .2s,box-shadow .2s,background .2s;
       -moz-appearance:textfield;
     }
-    /* width:100% SOLO dentro de input-group */
     .input-group input[type="text"],
     .input-group input[type="number"] { width:100%; }
 
@@ -133,6 +131,8 @@
     .btn-ghost { background:var(--surface);color:var(--text);border:1px solid var(--border); }
     .btn-ghost:hover { background:var(--surface-hover);border-color:var(--border-strong); }
     .btn-full { width:100%; }
+    .btn-wa { background:#aaff00;color:#050508; }
+    .btn-wa:hover { background:#c4ff2a;transform:translateY(-1px); }
 
     .chips-list { display:flex;flex-direction:column;gap:7px;margin-bottom:12px; }
     .chip-item {
@@ -154,7 +154,6 @@
     .remove-btn { background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.15rem;transition:color .2s;padding:2px 5px;border-radius:5px;min-width:36px;min-height:36px;display:inline-flex;align-items:center;justify-content:center; }
     .remove-btn:hover { color:var(--red);background:var(--red-dim); }
 
-    /* ── +/- control (compartido entre secciones) ── */
     .qty-control { display:flex;align-items:center;gap:5px;flex-shrink:0; }
     .qty-btn {
       width:36px;height:44px;border-radius:10px;border:1px solid var(--border);
@@ -164,7 +163,6 @@
     }
     .qty-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-dim); }
     .qty-btn:active { transform:scale(.92); }
-    /* input dentro de qty-control: tamaño fijo, no hereda width:100% */
     .qty-control input {
       flex:0 0 96px;width:96px;text-align:center;
       background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;
@@ -174,7 +172,6 @@
     .qty-control input:focus { border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);background:rgba(170,255,0,.03); }
     .qty-control input::-webkit-outer-spin-button,.qty-control input::-webkit-inner-spin-button{-webkit-appearance:none;}
 
-    /* Edit form */
     .card.editing-mode { border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim); }
     .edit-mode-label { font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);margin-bottom:10px;display:block; }
 
@@ -188,6 +185,26 @@
     .person-chip.removing { animation:fadeOut .22s ease forwards; }
     .person-chip button { background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:.9rem;transition:color .2s;padding:1px 3px;min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center; }
     .person-chip button:hover { color:var(--red); }
+
+    /* ── Checkbox estilo acento ── */
+    .check-row {
+      display:flex;align-items:center;gap:10px;margin-top:16px;cursor:pointer;
+    }
+    .check-row input[type="checkbox"] { display:none; }
+    .check-box {
+      width:20px;height:20px;border-radius:5px;border:2px solid var(--border);
+      background:transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+      transition:all .2s;
+    }
+    .check-row input[type="checkbox"]:checked + .check-box {
+      background:var(--accent);border-color:var(--accent);
+    }
+    .check-row input[type="checkbox"]:checked + .check-box::after {
+      content:'✓';color:#050508;font-size:.75rem;font-weight:900;line-height:1;
+    }
+    .check-label {
+      font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text-muted);line-height:1.4;
+    }
 
     /* ── Assign ── */
     .assign-total-bar {
@@ -209,7 +226,6 @@
       background:var(--accent-dim);border:1px solid rgba(170,255,0,.18);color:var(--accent);cursor:pointer;transition:all .18s;
     }
     .assign-quick:hover { background:rgba(170,255,0,.18); }
-    /* assign-row: nombre | [- input +] | precio */
     .assign-row { display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);gap:12px; }
     .assign-row:last-of-type { border-bottom:none; }
     .assign-person-name { font-size:.88rem;font-weight:600;flex:1;min-width:0; }
@@ -243,25 +259,46 @@
     .verify-bar.ok  { background:rgba(170,255,0,.08);border:1px solid rgba(170,255,0,.2);color:var(--accent); }
     .verify-bar.warn { background:rgba(255,200,0,.08);border:1px solid rgba(255,200,0,.22);color:var(--yellow); }
 
+    /* ── WhatsApp share ── */
+    .wa-section {
+      margin-top:16px;
+      animation:fadeUp .3s ease;
+    }
+    .wa-phone-row {
+      display:flex;gap:8px;align-items:stretch;margin-top:10px;
+    }
+    .wa-prefix {
+      font-family:'JetBrains Mono',monospace;font-size:.9rem;color:var(--text-muted);
+      background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;
+      padding:11px 12px;white-space:nowrap;display:flex;align-items:center;flex-shrink:0;
+    }
+    .wa-number {
+      flex:1;
+      background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;
+      padding:11px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.95rem;
+      outline:none;transition:border-color .2s,box-shadow .2s;width:100%;
+      -moz-appearance:textfield;
+    }
+    .wa-number:focus { border-color:#25D366;box-shadow:0 0 0 3px rgba(37,211,102,.15); }
+    .wa-number::placeholder { color:var(--text-dim); }
+
     .done-divider { border:none;border-top:1px dashed var(--border);margin:32px 0; }
     .done-screen { text-align:center;padding:8px 0 32px;animation:fadeUp .5s cubic-bezier(.4,0,.2,1) forwards; }
     .done-check { width:72px;height:72px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:2rem;color:#04040a;animation:popIn .5s cubic-bezier(.34,1.56,.64,1) forwards; }
     @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
     .done-title { font-size:1.65rem;font-weight:800;letter-spacing:-.02em;margin-bottom:8px; }
     .done-sub { font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text-muted);margin-bottom:26px;line-height:1.7; }
+    .done-actions { display:flex;gap:10px;justify-content:center;flex-wrap:wrap; }
 
-    /* ── STEP NAV (mobile: en flujo) ── */
     .step-nav { display:flex;gap:9px;justify-content:flex-end;align-items:center;margin-top:56px;padding-bottom:calc(24px + env(safe-area-inset-bottom)); }
     .step-counter { font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-muted);margin-right:auto; }
 
-    /* ── BOTTOM BAR (desktop: fija) ── */
     .bottom-bar {
       display:none;position:fixed;bottom:0;left:0;right:0;padding:10px 24px;
       background:rgba(7,7,15,.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
       border-top:1px solid var(--border);gap:9px;justify-content:flex-end;z-index:100;align-items:center;
     }
 
-    /* ── TOAST ── */
     #toast {
       position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-12px);
       background:rgba(20,20,32,0.95);border:1px solid var(--border-strong);
@@ -277,7 +314,6 @@
 
     .mt-10{margin-top:10px} .mt-16{margin-top:16px} .mt-24{margin-top:24px} .center{text-align:center}
 
-    /* ── iPhone SE ≤ 390px ── */
     @media (max-width: 390px) {
       header { padding: 12px 14px; }
       .logo { font-size: 1.3rem; }
@@ -300,9 +336,9 @@
       .btn { font-size: .82rem; padding: 10px 14px; }
       .done-title { font-size: 1.4rem; }
       .done-check { width: 60px; height: 60px; font-size: 1.7rem; }
+      .done-actions { flex-direction: column; align-items: center; }
     }
 
-    /* ── Desktop ≥ 768px ── */
     @media (min-width: 768px) {
       main { max-width: 720px; padding-left: 32px; padding-right: 32px; padding-bottom: 90px; }
       .step-title { font-size: 2.6rem; }
@@ -328,10 +364,8 @@
       .info-row { font-size: .85rem; }
       .step-nav { display: none; }
       .bottom-bar { display: flex; }
-      /* "Qué pidieron": qty-control ocupa todo el ancho del input-group */
       .input-group .qty-control { width: 100%; }
       .input-group .qty-control input { flex: 1; width: auto; }
-      /* "Asigná el consumo": qty-control centrado y más amplio */
       .assign-row .qty-control { flex: 1; justify-content: center; }
       .assign-row .qty-control input { flex: 1; max-width: 120px; width: auto; }
     }
@@ -468,6 +502,11 @@
         <button class="seg-btn" id="tipPropBtn" onclick="setTipSplit('prop')">Proporcional</button>
       </div>
       <div class="info-row mt-10" id="tipDisplay"></div>
+      <label class="check-row" for="tipIncluded">
+        <input type="checkbox" id="tipIncluded">
+        <span class="check-box"></span>
+        <span class="check-label">La propina ya está incluida en el total ingresado</span>
+      </label>
     </div>
     <div class="step-nav">
       <span class="step-counter" id="stepCounter-4"></span>
@@ -492,7 +531,21 @@
         <div class="done-check">✓</div>
         <div class="done-title">¡Cuenta cerrada!</div>
         <div class="done-sub">Todos saben lo que deben.<br>El ticket de arriba queda como referencia.</div>
-        <button class="btn btn-ghost" onclick="resetApp()">↩ Nueva cuenta</button>
+        <div class="done-actions">
+          <button class="btn btn-ghost" onclick="resetApp()">↩ Nueva cuenta</button>
+          <button class="btn btn-ghost" onclick="toggleWA()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Compartir cuenta
+          </button>
+        </div>
+        <!-- Campo WhatsApp (oculto por defecto) -->
+        <div class="wa-section" id="waSection" style="display:none">
+          <div class="wa-phone-row">
+            <span class="wa-prefix">+549</span>
+            <input type="number" class="wa-number" id="waNumber" placeholder="1123456789">
+            <button class="btn btn-wa" onclick="sendWA()">Enviar</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="step-nav" id="stepNav-5">
@@ -526,7 +579,7 @@ if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.
 // ── STATE ──────────────────────────────────────────────────────────
 let state = {
   total:0, description:'', items:[], people:[], assignments:{},
-  tip:{mode:'pct',value:0,split:'equal'}, finalized:false
+  tip:{mode:'pct',value:0,split:'equal',included:false}, finalized:false
 };
 let currentStep = 0;
 const TOTAL_STEPS = 6;
@@ -588,7 +641,7 @@ function toast(msg, type='error') {
 function clearData() {
   localStorage.removeItem('spl1t_state');
   localStorage.removeItem('spl1t_step');
-  state={total:0,description:'',items:[],people:[],assignments:{},tip:{mode:'pct',value:0,split:'equal'},finalized:false};
+  state={total:0,description:'',items:[],people:[],assignments:{},tip:{mode:'pct',value:0,split:'equal',included:false},finalized:false};
   ['descInput','itemName','personName'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
   resetInput(document.getElementById('totalInput'));
   resetInput(document.getElementById('itemPrice'));
@@ -596,6 +649,7 @@ function clearData() {
   document.getElementById('tipInput').value='';
   document.getElementById('itemPreview').innerHTML='';
   document.getElementById('tipDisplay').innerHTML='';
+  document.getElementById('tipIncluded').checked=false;
   setTipMode('pct'); setTipSplit('equal');
   renderItems(); renderPeople();
   toast('Datos eliminados','ok');
@@ -662,7 +716,10 @@ function validateStep(n) {
 
 function collectStep(n) {
   if(n===0){ state.total=getRaw(document.getElementById('totalInput')); state.description=document.getElementById('descInput').value.trim(); }
-  if(n===4){ state.tip.value=parseFloat(document.getElementById('tipInput').value)||0; }
+  if(n===4){
+    state.tip.value=parseFloat(document.getElementById('tipInput').value)||0;
+    state.tip.included=document.getElementById('tipIncluded').checked;
+  }
 }
 
 // ── VIBRATION ──────────────────────────────────────────────────────
@@ -987,12 +1044,30 @@ function renderSummary() {
   const grand=subtotal+tipAmt;
   const diff=Math.abs(grand-state.total);
   const now=new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'});
+
   const personsHTML=state.people.map(p=>{
     const d=amounts[p.id];
     const detail=d.items.map(i=>`${esc(i.name)}: ${fmt(i.amt)}`).join('\n');
     return `<div class="ticket-person"><div><div class="ticket-person-name">${esc(p.name)}</div><div class="ticket-person-detail">${detail||'Sin consumo asignado'}</div></div><div class="ticket-amount"><div class="main">${fmt(d.total)}</div>${d.tip>0?`<div class="tip-note">incl. propina ${fmt(d.tip)}</div>`:''}</div></div>`;
   }).join('');
-  const verifyOk=diff<2;
+
+  // Verificación: si propina incluida, comparar con grand; si no, comparar con subtotal
+  const tipIncluded = state.tip.included;
+  const compareTotal = tipIncluded ? grand : subtotal;
+  const verifyDiff = Math.abs(compareTotal - state.total);
+  const verifyOk = verifyDiff < 2;
+
+  let verifyMsg = '';
+  if(verifyOk) {
+    verifyMsg = tipIncluded
+      ? `El total coincide (propina incluida: ${fmt(grand)})`
+      : `El subtotal coincide con el ingresado (${fmt(subtotal)})`;
+    if(!tipIncluded && tipAmt > 0) verifyMsg += ` · más propina: ${fmt(tipAmt)}`;
+  } else {
+    verifyMsg = `Diferencia de ${fmt(verifyDiff)} — Ingresado: ${fmt(state.total)} · Calculado: ${fmt(compareTotal)}`;
+    if(!tipIncluded && tipAmt > 0) verifyMsg += ` (sin propina)`;
+  }
+
   document.getElementById('summaryContainer').innerHTML=`
     <div class="ticket">
       <div class="ticket-head">
@@ -1006,10 +1081,11 @@ function renderSummary() {
       <div class="ticket-footer">
         <div class="verify-bar ${verifyOk?'ok':'warn'}">
           <span>${verifyOk?'✓':'⚠'}</span>
-          <span>${verifyOk?`El total calculado coincide con el ingresado (${fmt(grand)})`:`Diferencia de ${fmt(diff)} — Ingresado: ${fmt(state.total)} · Calculado: ${fmt(grand)}`}</span>
+          <span>${verifyMsg}</span>
         </div>
       </div>
     </div>`;
+
   document.getElementById('finalizeSection').style.display=state.finalized?'none':'block';
   document.getElementById('doneScreen').style.display=state.finalized?'block':'none';
 }
@@ -1025,15 +1101,59 @@ function finalize() {
   setTimeout(()=>done.scrollIntoView({behavior:'smooth',block:'start'}),50);
 }
 
+// ── WHATSAPP ───────────────────────────────────────────────────────
+function toggleWA() {
+  const sec = document.getElementById('waSection');
+  const visible = sec.style.display !== 'none';
+  sec.style.display = visible ? 'none' : 'block';
+  if(!visible) {
+    document.getElementById('waNumber').value = '';
+    document.getElementById('waNumber').focus();
+  }
+}
+
+function buildWAMessage() {
+  const amounts = calcAmounts();
+  const subtotal = state.items.reduce((s,i)=>s+i.unitPrice*i.qty,0);
+  const tipAmt = getTipAmount();
+  const grand = subtotal + tipAmt;
+  const desc = state.description || 'Cuenta';
+
+  let msg = `🧾 *spl1t!* — ${desc}\n\n`;
+  msg += `💰 *Total: ${fmt(grand)}*`;
+  if(tipAmt > 0) msg += ` _(propina: ${fmt(tipAmt)})_`;
+  msg += '\n\n';
+
+  state.people.forEach(p => {
+    const d = amounts[p.id];
+    msg += `👤 *${p.name}*\n`;
+    d.items.forEach(i => { msg += `   ${i.name}: ${fmt(i.amt)}\n`; });
+    if(d.tip > 0) msg += `   Propina: ${fmt(d.tip)}\n`;
+    msg += `   *Total: ${fmt(d.total)}*\n\n`;
+  });
+
+  return msg.trim();
+}
+
+function sendWA() {
+  const num = document.getElementById('waNumber').value.replace(/\D/g,'');
+  if(!num || num.length < 8) { toast('Ingresá un número válido.'); return; }
+  const fullNum = '549' + num;
+  const msg = encodeURIComponent(buildWAMessage());
+  window.open(`https://wa.me/${fullNum}?text=${msg}`, '_blank');
+}
+
 // ── RESET ──────────────────────────────────────────────────────────
 function resetApp() {
   localStorage.removeItem('spl1t_state'); localStorage.removeItem('spl1t_step');
-  state={total:0,description:'',items:[],people:[],assignments:{},tip:{mode:'pct',value:0,split:'equal'},finalized:false};
+  state={total:0,description:'',items:[],people:[],assignments:{},tip:{mode:'pct',value:0,split:'equal',included:false},finalized:false};
   currentStep=0;
   ['descInput','itemName','personName'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
   resetInput(document.getElementById('totalInput')); resetInput(document.getElementById('itemPrice'));
   document.getElementById('itemQty').value=''; document.getElementById('tipInput').value='';
   document.getElementById('itemPreview').innerHTML=''; document.getElementById('tipDisplay').innerHTML='';
+  document.getElementById('tipIncluded').checked=false;
+  document.getElementById('waSection').style.display='none';
   setTipMode('pct'); setTipSplit('equal'); renderItems(); renderPeople();
   showStep(0); window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -1051,6 +1171,7 @@ loadState();
 if(state.total)       document.getElementById('totalInput').value=state.total;
 if(state.description) document.getElementById('descInput').value=state.description;
 if(state.tip.value)   document.getElementById('tipInput').value=state.tip.value;
+if(state.tip.included) document.getElementById('tipIncluded').checked=true;
 setTipMode(state.tip.mode); setTipSplit(state.tip.split);
 renderItems(); renderPeople(); showStep(currentStep);
 
@@ -1062,6 +1183,7 @@ document.getElementById('itemQty').addEventListener('input', updateItemPreview);
 document.getElementById('itemName').addEventListener('keydown',  e=>{ if(e.key==='Enter') addItem(); });
 document.getElementById('itemPrice').addEventListener('keydown', e=>{ if(e.key==='Enter') addItem(); });
 document.getElementById('itemQty').addEventListener('keydown',   e=>{ if(e.key==='Enter') addItem(); });
+document.getElementById('waNumber').addEventListener('keydown',  e=>{ if(e.key==='Enter') sendWA(); });
 </script>
 </body>
 </html>
