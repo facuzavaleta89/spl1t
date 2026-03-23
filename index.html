@@ -192,7 +192,8 @@
     .assign-right { display:flex;align-items:center;gap:8px; }
     /* assign-input: tamaño fijo, NO hereda width:100% porque no está en .input-group */
     .assign-input {
-      width:68px;
+      flex: 0 0 68px;
+      width: 68px;
       background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;
       padding:6px 9px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.88rem;
       outline:none;text-align:center;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;
