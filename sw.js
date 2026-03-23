@@ -1,4 +1,4 @@
-const CACHE = 'spl1t-v3';
+const CACHE = 'spl1t-v4';
 const ASSETS = [
   '/spl1t/',
   '/spl1t/index.html',
