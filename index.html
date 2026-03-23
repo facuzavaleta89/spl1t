@@ -290,6 +290,12 @@
       .info-row { font-size: .85rem; }
       .step-nav { display: none; }
       .bottom-bar { display: flex; }
+      /* "Qué pidieron": qty-control ocupa todo el ancho del input-group */
+      .input-group .qty-control { width: 100%; }
+      .input-group .qty-control input { flex: 1; width: auto; }
+      /* "Asigná el consumo": qty-control centrado y más amplio */
+      .assign-row .qty-control { flex: 1; justify-content: center; }
+      .assign-row .qty-control input { flex: 1; max-width: 120px; width: auto; }
     }
   </style>
 </head>
