@@ -975,7 +975,7 @@ function splitEqual(itemId) {
     const inp=document.querySelector(`#assignmentContainer [oninput*="'${itemId}','${p.id}'"]`);
     if(inp) inp.value='1';
   });
-  refreshShares(itemId); saveState();
+  refreshShares(itemId); refreshAssignTotal(); saveState();
 }
 
 function clearAssign(itemId) {
@@ -985,7 +985,7 @@ function clearAssign(itemId) {
     const inp=document.querySelector(`#assignmentContainer [oninput*="'${itemId}','${p.id}'"]`);
     if(inp) inp.value='';
   });
-  refreshShares(itemId); saveState();
+  refreshShares(itemId); refreshAssignTotal(); saveState();
 }
 
 // ── TIP ────────────────────────────────────────────────────────────
